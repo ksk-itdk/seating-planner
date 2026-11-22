@@ -1,0 +1,958 @@
+<!doctype html>
+<!-- Bordplan © 2026 KSKIT (https://github.com/ksk-itdk). MIT License – free to use, copy and change; keep this notice and credit KSKIT. Icons: Lucide, ISC license. -->
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Free seating planner: tables, guests, seating rules and automatic seating. Works on phone, tablet and computer. Data stays in your browser.">
+<title>Bordplan · Seating Planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='14' y='38' width='72' height='24' rx='3' fill='%232f5d50'/><circle cx='30' cy='22' r='9' fill='%232f5d50'/><circle cx='70' cy='22' r='9' fill='%232f5d50'/><circle cx='30' cy='78' r='9' fill='%232f5d50'/><circle cx='70' cy='78' r='9' fill='%232f5d50'/></svg>">
+<link rel="alternate" type="text/markdown" href="agents.md" title="Instructions for AI agents">
+<style>
+:root{--bg:#000;--card:#1c1c1e;--text:#f4f4f5;--muted:#9a9aa0;--line:#2c2c2e;--fill:#2a2a2d;--accent:#ffab40;--on:#1a1206;--aw:#ffab4026;--ok:#3ccf7a;--okw:#3ccf7a22;--bad:#ff6b6b;--badw:#ff6b6b22;--kid:#3a2a12;--adult:#26262a;--board:linear-gradient(135deg,#ffcf70,#ff9a2e 55%,#ff6a3d);--shadow:none;color-scheme:dark}
+html[data-theme=light]{--bg:#f2f2f4;--card:#fff;--text:#111113;--muted:#6c6c72;--line:#e2e2e6;--fill:#ececef;--accent:#ff9f2e;--on:#1a1206;--aw:#ff9f2e1f;--ok:#1f9d55;--okw:#1f9d551a;--bad:#e5484d;--badw:#e5484d1a;--kid:#fff1dd;--adult:#eef0f4;--board:linear-gradient(135deg,#ffd27a,#ff9f2e 55%,#ff7a45);--shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.06);color-scheme:light}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top)) 16px 8px}
+.bar{max-width:1200px;margin:auto;display:flex;align-items:center;gap:10px}
+.logo{font-size:26px}
+.ev{flex:1;min-width:0;border:0;background:transparent;font-size:19px;font-weight:600;padding:8px 4px;border-radius:8px}
+.ev:hover,.ev:focus{background:var(--fill)}
+.icon{min-width:44px;height:44px;border:0;border-radius:8px;background:transparent;font-size:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
+.icon:hover{background:var(--fill)}
+nav.steps{display:flex;gap:4px}
+.steps button{border:0;background:transparent;border-radius:10px;padding:8px 14px;min-height:44px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:6px}
+.steps button[aria-current=page]{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+.steps .n{font-size:12px;background:var(--fill);border-radius:10px;padding:1px 7px;color:var(--muted)}
+.steps .n.ok{background:var(--okw);color:var(--ok)}.steps .n.bad{background:var(--badw);color:var(--bad)}
+.steps .ic{font-size:18px}
+@media (max-width:799px){
+ nav.steps{position:fixed;left:0;right:0;bottom:0;z-index:20;justify-content:space-around;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+ .steps button{flex:1;flex-direction:column;gap:0;font-size:11px;padding:4px 2px;position:relative}
+ .steps button[aria-current=page]{background:transparent;box-shadow:none;color:var(--accent)}
+ .steps .n{position:absolute;top:0;left:calc(50% + 6px);font-size:10px;padding:0 5px}
+ .steps .ic{font-size:22px}
+}
+@media (min-width:800px){body{padding-bottom:40px}.top{background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)}.top .bar{flex-wrap:nowrap}}
+main{max-width:1200px;margin:auto;padding:16px}
+.narrow{max-width:760px;margin:auto}
+h1{font-size:28px;margin:8px 0 4px;letter-spacing:-.02em}
+h2{font-size:20px;margin:24px 0 8px}
+.lead{color:var(--muted);margin:0 0 16px}
+.card{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:16px;margin:0 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted);font-size:14px}
+.btn{min-height:44px;border:0;border-radius:8px;padding:10px 16px;background:var(--fill);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{filter:brightness(.97)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.big{min-height:52px;font-size:17px;padding:12px 22px;border-radius:8px}
+.btn.danger{color:var(--bad)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.wide{width:100%}
+.field{min-height:44px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--card);width:100%}
+textarea.field{min-height:120px}
+.seg{display:inline-flex;background:var(--fill);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:8px;min-height:40px;padding:6px 12px;font-size:15px;font-weight:500}
+.seg button[aria-pressed=true]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.stepper{display:inline-flex;align-items:center;background:var(--fill);border-radius:8px}
+.stepper button{width:44px;height:44px;border:0;background:transparent;font-size:22px;border-radius:8px}
+.stepper output{min-width:32px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.kv{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.kv:first-of-type{border-top:0}
+.switch{position:relative;width:51px;height:31px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;background:var(--line);border-radius:8px;transition:.2s}
+.switch span:after{content:"";position:absolute;left:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:.2s}
+.switch input:checked+span{background:var(--ok)}
+.switch input:checked+span:after{transform:translateX(20px)}
+.switch input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 14px;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip .o{background:#fff;color:var(--accent);border-radius:9px;font-size:12px;padding:0 6px;font-weight:700}
+.chip.kid:not([aria-pressed=true]){background:var(--kid)}
+.pill{display:inline-block;font-size:12px;border-radius:8px;padding:2px 8px;background:var(--fill);color:var(--muted)}
+.pill.kid{background:var(--kid);color:inherit}
+.pill.bad{background:var(--badw);color:var(--bad)}
+.summary{display:flex;gap:10px;flex-wrap:wrap}
+.summary .card{flex:1;min-width:140px;margin:0;text-align:center;padding:12px}
+.summary b{display:block;font-size:26px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.list{list-style:none;margin:0;padding:0}
+.list>li{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.list>li:first-child{border-top:0}
+.rule{flex:1;text-align:left;border:0;background:transparent;padding:8px 4px;min-height:44px;border-radius:10px;display:flex;gap:10px;align-items:center}
+.rule:hover{background:var(--fill)}
+.rule .ri{font-size:20px;width:28px;text-align:center;flex:none}
+.del{width:44px;height:44px;border:0;background:transparent;border-radius:8px;color:var(--muted);font-size:18px;flex:none}
+.del:hover{background:var(--badw);color:var(--bad)}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.type{border:2px solid var(--line);background:var(--card);border-radius:8px;padding:12px;text-align:left;min-height:64px}
+.type[aria-pressed=true]{border-color:var(--accent);background:var(--aw)}
+.type b{display:block}
+.type .ri{font-size:22px}
+.preview{background:var(--aw);border-radius:8px;padding:12px 14px;font-weight:600;min-height:48px}
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty .e{font-size:44px}
+dialog{border:0;padding:0;background:var(--card);color:var(--text);border-radius:8px;width:min(560px,calc(100% - 32px));max-height:calc(100% - 48px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+@media (max-width:599px){dialog{margin:auto 0 0;width:100%;max-width:100%;border-radius:8px 20px 0 0;max-height:92dvh}}
+.sh{display:flex;align-items:center;gap:8px;padding:12px 12px 8px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
+.sh h3{flex:1;margin:0;font-size:18px}
+.sb{padding:16px 20px;overflow:auto}
+.sf{display:flex;gap:10px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--card)}
+.sf .btn{flex:1}
+.lbl{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px}
+.lbl:first-child{margin-top:0}
+.menu{display:flex;flex-direction:column}
+.menu button,.menu a{border:0;background:transparent;text-align:left;padding:12px 8px;min-height:48px;border-radius:10px;display:flex;gap:12px;align-items:center;color:inherit;text-decoration:none;font-size:16px}
+.menu button:hover,.menu a:hover{background:var(--fill)}
+.foot{text-align:center;padding:24px 16px 32px;font-size:13px;color:var(--muted)}.foot a,.foot button{color:inherit;background:none;border:0;font:inherit;padding:0;text-decoration:underline;cursor:pointer}
+.menu hr{border:0;border-top:1px solid var(--line);width:100%;margin:6px 0}
+/* plan */
+.planbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.status{border-radius:8px;padding:12px 16px;margin-bottom:12px;font-weight:500}
+.status.ok{background:var(--okw)}.status.bad{background:var(--badw);color:inherit}
+.status ul{margin:8px 0 0;padding-left:20px;font-weight:400;font-size:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;border:2px dashed var(--line);border-radius:8px;padding:8px;margin-bottom:12px;align-items:center}
+.tray.over{border-color:var(--accent);background:var(--aw)}
+.tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:12px}
+.tables.drawing{grid-template-columns:1fr}
+.tcard{background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:12px;overflow:hidden}
+.tcard h3{margin:0 0 8px;font-size:16px;display:flex;justify-content:space-between}
+.fit{position:relative;overflow:hidden}
+.fit>.inner{position:absolute;left:0;top:0;transform-origin:0 0}
+.seat{position:absolute;width:88px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:13px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;padding:0 18px 0 4px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overflow:hidden;touch-action:manipulation}
+.seat.adult{background:var(--adult)}.seat.kid{background:var(--kid)}
+.seat.empty{color:var(--muted);border-style:dashed;padding:0 4px;font-size:12px}
+.seat.bad{border:2px solid var(--bad)}
+.seat.sel,.seat.over{outline:3px solid var(--accent);outline-offset:1px;z-index:2}
+.seat.locked{box-shadow:inset 0 0 0 2px #ffcc00}
+.lk{position:absolute;right:0;top:0;bottom:0;width:22px;border:0;background:transparent;font-size:11px;padding:0;opacity:.45}
+.seat.locked .lk,.lk:hover{opacity:1}
+@media (pointer:coarse){.lk{width:26px;font-size:13px;opacity:.7}.seat{padding-right:24px}}
+.board{position:absolute;background:var(--board);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.chalk{position:absolute;top:14px;height:30px;border-radius:8px;background:#2f5d46;color:#e8f3ec;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;letter-spacing:.02em}
+.trot{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.25);color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}.trot svg{width:16px;height:16px}
+.board.vert .trot{top:auto;bottom:4px;right:50%;transform:translateX(50%)}
+.board.desk{font-size:11px;opacity:.95}
+.board.move{cursor:grab;touch-action:none;outline:2px dashed var(--accent)}
+.slist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.slist li{display:flex;gap:8px;align-items:center}
+.slist .no{width:24px;text-align:right;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.slist .seat{position:relative;width:auto;flex:1;height:44px;justify-content:flex-start;padding-left:12px;font-size:15px}
+.dragghost{position:fixed;z-index:100;pointer-events:none;padding:10px 14px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);transform:translate(-50%,-130%)}
+body.dragging{user-select:none;-webkit-user-select:none}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:8px;z-index:200;font-size:15px;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+details summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--accent);font-weight:500}
+#printArea{display:none}
+@media print{
+ body{background:#fff;color:#000;padding:0}
+ body>*:not(#printArea){display:none!important}
+ #printArea{display:block}
+ .seat{background:#fff!important;border:1px solid #000!important;box-shadow:none!important;color:#000}
+ .lk{display:none}
+ .pt{break-inside:avoid;margin-bottom:16px}
+ .cards{display:grid;grid-template-columns:1fr 1fr;gap:0}
+ .pc{height:6.5cm;border:1px dashed #999;display:grid;grid-template-rows:1fr 1fr;text-align:center;break-inside:avoid}
+ .pc div{display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:26px;font-weight:600}
+ .pc div:first-child{transform:rotate(180deg);border-bottom:1px dotted #ccc}
+ .pc small{font-size:13px;font-weight:400}
+ .glist{columns:2;font-size:13px}
+}
+@media screen and (min-width:1000px){.tables{grid-template-columns:repeat(auto-fit,minmax(560px,1fr))}#main .seat{font-size:15px;font-weight:500}#main .board{font-size:17px}.tcard h3{font-size:19px}}
+body,button,input,select,textarea{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+h1,h2{font-weight:700;letter-spacing:-.02em}#evName{font-weight:700;letter-spacing:-.01em}
+.card,.tcard,.dlg,#dlg{border-radius:18px}.status{border-radius:14px}.btn,.chip,.seg,.seg button{border-radius:999px!important}.seat{border-radius:12px}.board{border-radius:14px}
+.btn.primary,.chip[aria-pressed=true],.dragghost{color:var(--on)}.chip .o{color:var(--on)}
+.ico{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
+.btn,.menu>button,.menu>a{display:inline-flex;align-items:center;gap:8px}.menu>button,.menu>a{display:flex}
+.steps .ic .ico{width:22px;height:22px}.ri{display:inline-flex}.ri .ico{width:20px;height:20px}
+.board{color:#2a1600;text-shadow:none}.steps button[aria-current=page]{color:var(--accent)}
+.seat .lk{opacity:.5}.seat.locked .lk{opacity:1;color:var(--accent)}.seat .lk .ico{width:14px;height:14px}
+.seg{flex:none}.seg button,.btn{white-space:nowrap}
+.top .bar{flex-wrap:wrap;row-gap:6px}.top .ev{flex:1 0 auto;max-width:100%;min-width:8ch;text-overflow:ellipsis}.top #menuBtn{order:2}.top .steps{order:3;margin-left:auto}
+.lvd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.seat.lv-strong{box-shadow:inset 4px 0 0 #30d158}.seat.lv-mid{box-shadow:inset 4px 0 0 #ff9f2e}.seat.lv-support{box-shadow:inset 4px 0 0 #64a8ff}
+.gd{max-width:720px}.gdtop{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.gdsteps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted)}
+.gdsteps li{display:flex;align-items:center;gap:6px}.gdsteps li span{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;border:1px solid var(--line);font-size:12px;font-weight:600}
+.gdsteps li.cur{color:var(--text);font-weight:600}.gdsteps li.cur span{background:var(--accent);border-color:var(--accent);color:#1c1c1e}.gdsteps li.done span{background:var(--card);color:var(--accent)}.gdsteps .ico{width:14px;height:14px}
+.gdadv{flex:none;white-space:nowrap}.gdname{display:inline-flex;align-items:center;gap:2px}.icon.sm{width:32px;height:32px;min-height:32px}
+.gdbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 14px}.gdbar span{display:block;height:100%;background:var(--accent);transition:width .25s}
+.gd .seg{flex-wrap:wrap}.gd .row{gap:10px;margin-top:6px}
+.gdopts{display:grid;gap:8px}.gdopt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--fill);min-height:48px}
+.gdopt span{display:flex;flex-direction:column;gap:2px}.gdopt small{color:var(--muted);font-size:13px}.gdopt .ico{flex:none;margin-top:2px}
+.gdopt[aria-checked=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.gdopt[aria-checked=true] .ico{color:var(--accent)}
+@media(max-width:600px){.gdsteps li:not(.cur){font-size:0;gap:0}.gdsteps{gap:6px}}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hrow h1{margin-right:auto}
+.gdstyle li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0}.gdstyle .seg{flex:none}.chip.ghost{background:transparent;border-style:dashed}.chip small{opacity:.7}.gdlist{margin:4px 0 0;padding-left:20px;line-height:1.6}
+@media(max-width:600px){.gdstyle .seg button{padding:8px 10px}.gdstyle .seg button svg+*{}}
+</style>
+</head>
+<body>
+<a class="sr" href="#main">Skip to content</a>
+<header class="top">
+ <div class="bar">
+  
+  <label class="sr" for="evName" data-t="Event name">Event name</label>
+  <input id="evName" class="ev" autocomplete="off" data-tp="Name your event">
+  <nav class="steps" id="steps" aria-label="Steps"></nav>
+  <button class="icon" id="menuBtn" aria-haspopup="dialog" data-ta="Menu" onclick="openMenu()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></button>
+ </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<footer class="foot" id="foot"></footer>
+
+<dialog id="dlg" aria-labelledby="dlgT"></dialog>
+<input type="file" id="imp" accept=".json,application/json" hidden onchange="importJSON(this)">
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+<script>
+/* =========================================================
+   Bordplan – engine (data model, geometry, rule check, solver)
+   Data format is documented in agents.md
+   ========================================================= */
+{const q=new URLSearchParams(location.search),l=['class','event'].some(k=>q.has(k))||q.get('lang')==='en'?'en':['klasse','fest','begivenhed'].some(k=>q.has(k))||q.get('lang')==='da'?'da':'';if(l)localStorage.setItem('bp_lang',l);}
+const LANG=(()=>{const s=localStorage.getItem('bp_lang');if(s)return s;const l=(navigator.languages&&navigator.languages[0])||navigator.language||'';return /^da\b/i.test(l)?'da':'en';})();
+/* Icons: Lucide (lucide.dev), ISC license */
+const IC={"school": "<path d=\"M14 22v-4a2 2 0 1 0-4 0v4\"/><path d=\"m18 10 3.447 1.724a1 1 0 0 1 .553.894V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7.382a1 1 0 0 1 .553-.894L6 10\"/><path d=\"M18 5v17\"/><path d=\"m4 6 7.106-3.553a2 2 0 0 1 1.788 0L20 6\"/><path d=\"M6 5v17\"/><circle cx=\"12\" cy=\"9\" r=\"2\"/>", "presentation": "<path d=\"M2 3h20\"/><path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\"/><path d=\"m7 21 5-5 5 5\"/>", "lightbulb": "<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\" />\n  <path d=\"M9 18h6\" />\n  <path d=\"M10 22h4\" />", "circle-minus": "<circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M8 12h8\" />", "megaphone": "<path d=\"M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z\" />\n  <path d=\"M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14\" />\n  <path d=\"M8 6v8\" />", "smile": "<path d=\"M15 10V9\" />\n  <path d=\"M16.472 15a6 6 0 01-8.943 0\" />\n  <path d=\"M9 10V9\" />\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />", "feather": "<path d=\"M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z\" />\n  <path d=\"M16 8 2 22\" />\n  <path d=\"M17.488 15H9\" />", "users-round": "<path d=\"M18 21a8 8 0 0 0-16 0\" />\n  <circle cx=\"10\" cy=\"8\" r=\"5\" />\n  <path d=\"M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3\" />", "settings-2": "<path d=\"M14 17H5\" />   <path d=\"M19 7h-9\" />   <circle cx=\"17\" cy=\"17\" r=\"3\" />   <circle cx=\"7\" cy=\"7\" r=\"3\" />", "split": "<path d=\"M16 3h5v5\" />   <path d=\"M8 3H3v5\" />   <path d=\"M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3\" />   <path d=\"m15 9 6-6\" />", "arrow-left-right": "<path d=\"M8 3 4 7l4 4\" />   <path d=\"M4 7h16\" />   <path d=\"m16 21 4-4-4-4\" />   <path d=\"M20 17H4\" />", "wand-sparkles": "<path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\" />   <path d=\"m14 7 3 3\" />   <path d=\"M5 6v4\" />   <path d=\"M19 14v4\" />   <path d=\"M10 2v2\" />   <path d=\"M7 8H3\" />   <path d=\"M21 16h-4\" />   <path d=\"M11 3H9\" />", "list-checks": "<path d=\"M13 5h8\" />   <path d=\"M13 12h8\" />   <path d=\"M13 19h8\" />   <path d=\"m3 17 2 2 4-4\" />   <path d=\"m3 7 2 2 4-4\" />", "download": "<path d=\"M12 15V3\"/> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/> <path d=\"m7 10 5 5 5-5\"/>", "trash-2": "<path d=\"M10 11v6\"/> <path d=\"M14 11v6\"/> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/> <path d=\"M3 6h18\"/> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/>", "chevron-right": "<path d=\"m9 18 6-6-6-6\"/>", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>", "ban": "<circle cx=\"12\" cy=\"12\" r=\"10\"/> <path d=\"M4.929 4.929 19.07 19.071\"/>", "circle": "<circle cx=\"12\" cy=\"12\" r=\"10\"/>", "menu": "<path d=\"M4 5h16\"/> <path d=\"M4 12h16\"/> <path d=\"M4 19h16\"/>", "file-text": "<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/> <path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/> <path d=\"M10 9H8\"/> <path d=\"M16 13H8\"/> <path d=\"M16 17H8\"/>", "rotate-cw": "<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\"/> <path d=\"M21 3v5h-5\"/>", "upload": "<path d=\"M12 3v12\"/> <path d=\"m17 8-5-5-5 5\"/> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>", "check": "<path d=\"M20 6 9 17l-5-5\"/>", "move": "<path d=\"M12 2v20\"/> <path d=\"m15 19-3 3-3-3\"/> <path d=\"m19 9 3 3-3 3\"/> <path d=\"M2 12h20\"/> <path d=\"m5 9-3 3 3 3\"/> <path d=\"m9 5 3-3 3 3\"/>", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>", "baby": "<path d=\"M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5\"/> <path d=\"M15 12h.01\"/> <path d=\"M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1\"/> <path d=\"M9 12h.01\"/>", "handshake": "<path d=\"m11 17 2 2a1 1 0 1 0 3-3\"/> <path d=\"m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4\"/> <path d=\"m21 3 1 11h-2\"/> <path d=\"M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3\"/> <path d=\"M3 4h8\"/>", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/> <rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/> <rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/> <rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>", "x": "<path d=\"M18 6 6 18\"/> <path d=\"m6 6 12 12\"/>", "utensils": "<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/> <path d=\"M7 2v20\"/> <path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/>", "lock-open": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/> <path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/> <path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/> <circle cx=\"9\" cy=\"7\" r=\"4\"/>", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"/> <circle cx=\"12\" cy=\"7\" r=\"4\"/>", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/> <path d=\"M22 10v6\"/> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/>", "circle-dot": "<circle cx=\"12\" cy=\"12\" r=\"1\"/> <circle cx=\"12\" cy=\"12\" r=\"10\"/>", "shuffle": "<path d=\"m18 14 4 4-4 4\"/> <path d=\"m18 2 4 4-4 4\"/> <path d=\"M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22\"/> <path d=\"M2 6h1.972a4 4 0 0 1 3.6 2.2\"/> <path d=\"M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45\"/>", "triangle-alert": "<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/> <path d=\"M12 9v4\"/> <path d=\"M12 17h.01\"/>", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>", "heart": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"10\"/> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/> <path d=\"M2 12h20\"/>", "arrow-up-down": "<path d=\"m21 16-4 4-4-4\"/> <path d=\"M17 20V4\"/> <path d=\"m3 8 4-4 4 4\"/> <path d=\"M7 4v16\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/> <path d=\"M12 2v2\"/> <path d=\"M12 20v2\"/> <path d=\"m4.93 4.93 1.41 1.41\"/> <path d=\"m17.66 17.66 1.41 1.41\"/> <path d=\"M2 12h2\"/> <path d=\"M20 12h2\"/> <path d=\"m6.34 17.66-1.41 1.41\"/> <path d=\"m19.07 4.93-1.41 1.41\"/>", "plus": "<path d=\"M5 12h14\"/> <path d=\"M12 5v14\"/>", "printer": "<path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/> <path d=\"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6\"/> <rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\"/>", "rectangle-horizontal": "<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/>", "armchair": "<path d=\"M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3\"/> <path d=\"M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z\"/> <path d=\"M5 18v2\"/> <path d=\"M19 18v2\"/>", "moon": "<path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\"/>", "bot": "<path d=\"M12 8V4H8\"/> <rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\"/> <path d=\"M2 14h2\"/> <path d=\"M20 14h2\"/> <path d=\"M15 13v2\"/> <path d=\"M9 13v2\"/>", "file-plus": "<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/> <path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/> <path d=\"M9 15h6\"/> <path d=\"M12 18v-6\"/>", "calendar": "<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/>", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>"};
+const ic=(n,c='')=>`<svg class="ico ${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+document.documentElement.lang=LANG;
+let THEME=localStorage.getItem('bp_theme')||'dark';document.documentElement.dataset.theme=THEME;
+function setTheme(t){THEME=t;localStorage.setItem('bp_theme',t);document.documentElement.dataset.theme=t;document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='light'?'#f2f2f4':'#000000');render();if(document.getElementById('dlg')?.open)openMenu();}
+const CLS=[[/\ban event\b/g,'a class'],[/\bAn event\b/g,'A class'],[/\bevents\b/g,'classes'],[/\bevent\b/g,'class'],[/\bEvents\b/g,'Classes'],[/\bEvent\b/g,'Class'],[/\bguests\b/g,'students'],[/\bGuests\b/g,'Students'],[/\bguest\b/g,'student'],[/\bGuest\b/g,'Student'],[/\bplace cards\b/g,'name cards'],[/\bPlace cards\b/g,'Name cards'],
+ [/gæsteliste/g,'elevliste'],[/Gæsteliste/g,'Elevliste'],[/gæsterne/g,'eleverne'],[/Gæsterne/g,'Eleverne'],[/gæster/g,'elever'],[/Gæster/g,'Elever'],[/gæsten/g,'eleven'],[/Gæsten/g,'Eleven'],[/gæst/g,'elev'],[/Gæst/g,'Elev'],[/begivenheden/g,'klassen'],[/begivenhed/g,'klasse'],[/Begivenhed/g,'Klasse'],[/bordkort/g,'navneskilte'],[/Bordkort/g,'Navneskilte']];
+const L=(en,da)=>{let s=LANG==='da'?da:en;if(window.__CM&&typeof s==='string')CLS.forEach(([a,b])=>s=s.replace(a,b));return s;};
+const OR=()=>L(' or ',' eller ');
+{const q=new URLSearchParams(location.search),m=q.has('klasse')||q.has('class')||q.get('mode')==='class'?'class':q.has('fest')||q.has('event')||q.has('begivenhed')||q.get('mode')==='event'?'event':'';if(m)localStorage.setItem('bp_mode',m);}
+const MODE=localStorage.getItem('bp_mode')==='class'?'class':'event',CM=(window.__CM=MODE==='class'),SKEY=CM?'seatplan_class':'seatplan';
+const LV={strong:{en:'High',da:'Høj',c:'#30d158'},mid:{en:'Middle',da:'Middel',c:'#ff9f2e'},support:{en:'Low',da:'Lav',c:'#64a8ff'}};
+const lvName=v=>L(LV[v||'mid'].en,LV[v||'mid'].da);
+function deskLayout(rows,cols,start){const out=[];let id=start;for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)out.push({id:id++,name:L('Desk ','Bord ')+(r*cols+c+1),shape:'rect',desk:true,dir:0,side:2,endL:0,endR:0,x:c*270,y:r*175,rot:0});return out;}
+function blankClass(){const b=blank();b.tables=deskLayout(3,4,1);b.nextId=13;b.settings.floor=true;return b;}
+/* rotate a table and everything joined to it 90° clockwise around the group's centre */
+function rotGroup(id){const F=floorInfo(),g=F.group(+id),mem=F.gs.filter(q=>F.group(q.t.id)===g);
+  const bx=[Math.min(...mem.map(q=>q.box[0])),Math.min(...mem.map(q=>q.box[1])),Math.max(...mem.map(q=>q.box[2])),Math.max(...mem.map(q=>q.box[3]))],cx=(bx[0]+bx[2])/2,cy=(bx[1]+bx[3])/2;
+  mem.forEach(q=>{const t=S.tables.find(x=>x.id===q.t.id),b=q.box;t.x=Math.round(cx-(b[3]-cy));t.y=Math.round(cy+(b[0]-cx));
+    if(t.desk)t.dir=((t.dir||0)+1)%4;else if(t.shape==='rect')t.rot=t.rot?0:1;});
+  /* if the turned group now overlaps other tables, slide it to the nearest free spot */
+  const ids=new Set(mem.map(q=>q.t.id)),ext=g=>{const xs=[g.box[0],g.box[2],...g.seats.map(s=>s.x-46),...g.seats.map(s=>s.x+46)],ys=[g.box[1],g.box[3],...g.seats.map(s=>s.y-22),...g.seats.map(s=>s.y+22)];return[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];};
+  const others=S.tables.filter(t=>!ids.has(t.id)).map(t=>ext(tableGeom(t))),mine=S.tables.filter(t=>ids.has(t.id));
+  const hits=(dx,dy)=>mine.some(t=>{const e=ext(tableGeom(t));return others.some(o=>e[0]+dx<o[2]&&e[2]+dx>o[0]&&e[1]+dy<o[3]&&e[3]+dy>o[1]);});
+  if(hits(0,0))outer:for(let r=10;r<=800;r+=10)for(const[dx,dy]of[[0,-r],[r,0],[-r,0],[0,r]])if(!hits(dx,dy)){mine.forEach(t=>{t.x+=dx;t.y+=dy;});break outer;}
+  commit();}
+/* snap a dragged table flush against a neighbour when it is dropped close to it */
+function snapTable(t){const F=floorInfo(),me=F.gs.find(q=>q.t.id===t.id),a=me.box,w=a[2]-a[0],h=a[3]-a[1],M=26;let best=null;
+  F.gs.forEach(q=>{if(q.t.id===t.id||q.round)return;const b=q.box,ov=(p0,p1,q0,q1)=>Math.min(p1,q1)-Math.max(p0,q0);
+    const al=(v,c)=>c.reduce((m,x)=>Math.abs(x-v)<Math.abs(m-v)?x:m,c[0]);
+    if(ov(a[1],a[3],b[1],b[3])>-M){[[b[2],a[0]],[b[0]-w,a[0]]].forEach(([nx])=>{const d=Math.abs(nx-a[0]);if(d<M&&(!best||d<best.d)){let ny=al(a[1],[b[1],b[3]-h]);if(Math.abs(ny-a[1])>M)ny=a[1];best={d,x:nx,y:ny};}});}
+    if(ov(a[0],a[2],b[0],b[2])>-M){[[b[3]],[b[1]-h]].forEach(([ny])=>{const d=Math.abs(ny-a[1]);if(d<M&&(!best||d<best.d)){let nx=al(a[0],[b[0],b[2]-w]);if(Math.abs(nx-a[0])>M)nx=a[0];best={d,x:nx,y:ny};}});}});
+  if(best){t.x+=best.x-a[0];t.y+=best.y-a[1];}}
+function setMode(m){save();localStorage.setItem('bp_mode',m);location.href=location.pathname+(LANG==='da'?(m==='class'?'?klasse':'?fest'):(m==='class'?'?class':'?event'));}
+let S=JSON.parse(localStorage.getItem(SKEY)||'null')||(CM?blankClass():blank());
+function blank(){return{event:'',tables:[{id:1,name:L('Table 1','Bord 1'),shape:'rect',side:4,endL:1,endR:1,x:0,y:0,rot:0}],guests:[],rules:[],assign:{},locked:{},settings:{across:false},nextId:2};}
+const save=()=>{localStorage.setItem(SKEY,JSON.stringify(S));};
+const nid=()=>S.nextId++;
+const G=id=>S.guests.find(g=>g.id==id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const names=ids=>ids.filter(G).map(i=>G(i).name).join(OR());
+
+const nB=t=>t.side2??t.side,LEN=t=>t.shape==='round'?t.side:Math.max(t.side,nB(t));
+function seatsOf(t){
+  const out=[];
+  if(t.shape==='round'){
+    const n=t.side;
+    for(let i=0;i<n;i++)out.push({key:t.id+':R'+i,i});
+    out.forEach((s,i)=>{s.adj=n>1?[out[(i+1)%n].key,out[(i-1+n)%n].key]:[];s.across=n>3&&n%2==0?[out[(i+n/2)%n].key]:[];});
+    out.order=out;
+  }else{
+    const n=t.desk?0:t.side,m=t.desk?t.side:nB(t),T=[],B=[];
+    for(let i=0;i<n;i++)T.push({key:t.id+':T'+i});for(let i=0;i<m;i++)B.push({key:t.id+':B'+i});
+    const mk=(c,p)=>{const a=[];for(let i=0;i<c;i++)a.push({key:t.id+':'+p+i,adj:[],across:[]});
+      a.forEach((x,i)=>{if(i+1<a.length){x.adj.push(a[i+1].key);a[i+1].adj.push(x.key);}});return a;};
+    const LL=mk(t.endL||0,'L'),RR=mk(t.endR||0,'E');
+    [...T,...B].forEach(s=>{s.adj=[];s.across=[];});
+    for(const A of[T,B])for(let i=0;i+1<A.length;i++){A[i].adj.push(A[i+1].key);A[i+1].adj.push(A[i].key);}
+    if(n===m)for(let i=0;i<n;i++){T[i].across.push(B[i].key);B[i].across.push(T[i].key);}
+    else T.forEach((a,i)=>{const xa=(i+.5)/n;B.forEach((b,j)=>{if(Math.abs((j+.5)/m-xa)<.5/Math.max(n,m)+1e-9){a.across.push(b.key);b.across.push(a.key);}});});
+    const link=(E,t0,b0)=>{if(!E.length)return;const f=E[0],l=E[E.length-1];f.adj.push(t0.key);t0.adj.push(f.key);l.adj.push(b0.key);b0.adj.push(l.key);};
+    if(n){link(LL,T[0],B[0]);link(RR,T[n-1],B[m-1]);}
+    out.push(...T,...B,...LL,...RR);
+    out.T=T;out.B=B;out.LL=LL;out.RR=RR;
+    out.order=[...T,...RR,...[...B].reverse(),...[...LL].reverse()]; // clockwise
+  }
+  return out;
+}
+const U=100,D=72;
+function roundR(t){return Math.max(80,t.side*17);}
+function tableGeom(t){
+  const x=t.x||0,y=t.y||0,s=seatsOf(t),out=[];
+  if(t.shape==='round'){
+    const R=roundR(t),cx=x+R+50,cy=y+R+25,r=R-30;
+    s.forEach((q,i)=>{const a=2*Math.PI*i/t.side-Math.PI/2;out.push({key:q.key,x:cx+R*Math.cos(a),y:cy+R*Math.sin(a)});});
+    return{t,box:[cx-r,cy-r,cx+r,cy+r],round:true,cx,cy,r,seats:out};
+  }
+  if(t.desk){const m=t.side,Lb=m*U,k=(t.dir||0)%4,co=k%2?54:30;let pts=s.B.map((q,i)=>[q.key,Lb*(i+.5)/m,D+co]),bx=[[0,0],[Lb,D]];
+    for(let r=0;r<k;r++){pts=pts.map(([q,a,c])=>[q,-c,a]);bx=bx.map(([a,c])=>[-c,a]);}
+    const mx=Math.min(bx[0][0],bx[1][0]),my=Math.min(bx[0][1],bx[1][1]),W=Math.abs(bx[0][0]-bx[1][0]),H=Math.abs(bx[0][1]-bx[1][1]);
+    return{t,box:[x,y,x+W,y+H],desk:k,seats:pts.map(([q,a,c])=>({key:q,x:x+a-mx,y:y+c-my}))};}
+  const Lb=LEN(t)*U,rot=t.rot?1:0,loc=[],co=rot?54:30;
+  s.T.forEach((q,i)=>loc.push([q.key,Lb*(i+.5)/s.T.length,-co]));
+  s.B.forEach((q,i)=>loc.push([q.key,Lb*(i+.5)/s.B.length,D+co]));
+  const st=rot?96:46;
+  s.LL.forEach((q,j)=>loc.push([q.key,-50,D/2+(j-(s.LL.length-1)/2)*st]));
+  s.RR.forEach((q,j)=>loc.push([q.key,Lb+50,D/2+(j-(s.RR.length-1)/2)*st]));
+  loc.forEach(([k,a,c])=>out.push(rot?{key:k,x:x+D-c,y:y+a}:{key:k,x:x+a,y:y+c}));
+  return{t,box:rot?[x,y,x+D,y+Lb]:[x,y,x+Lb,y+D],seats:out};
+}
+function floorInfo(){
+  const gs=S.tables.map(tableGeom),blocked=new Set(),extra={},parent={};
+  const find=a=>parent[a]===undefined||parent[a]===a?a:(parent[a]=find(parent[a]));
+  const inBox=(p,b,m=0)=>p.x>b[0]-m&&p.x<b[2]+m&&p.y>b[1]-m&&p.y<b[3]+m;
+  for(let i=0;i<gs.length;i++)for(let j=0;j<gs.length;j++){if(i===j)continue;
+    const A=gs[i],B=gs[j];
+    A.seats.forEach(q=>{if(inBox(q,B.box,B.round?0:22))blocked.add(q.key);});
+    if(i<j&&!A.round&&!B.round){const a=A.box,b=B.box;
+      if(a[0]<=b[2]+2&&b[0]<=a[2]+2&&a[1]<=b[3]+2&&b[1]<=a[3]+2)parent[find(A.t.id)]=find(B.t.id);}
+  }
+  for(let i=0;i<gs.length;i++)for(let j=i+1;j<gs.length;j++)
+    gs[i].seats.forEach(p=>gs[j].seats.forEach(q=>{
+      if(blocked.has(p.key)||blocked.has(q.key))return;
+      const d=Math.hypot(p.x-q.x,p.y-q.y);
+      if(d<60)blocked.add(q.key);
+      else if(d<=112){(extra[p.key]=extra[p.key]||[]).push(q.key);(extra[q.key]=extra[q.key]||[]).push(p.key);}
+    }));
+  return{gs,blocked,extra,group:id=>find(id)};
+}
+function allSeats(){
+  const m={},F=S.settings.floor?floorInfo():null;
+  S.tables.forEach(t=>seatsOf(t).forEach(s=>{
+    if(F&&F.blocked.has(s.key))return;
+    let nb=S.settings.across?[...s.adj,...s.across]:[...s.adj];
+    if(F)nb=[...nb,...(F.extra[s.key]||[])];
+    m[s.key]={table:F?F.group(t.id):t.id,nb,across:[...(s.across||[])]};
+  }));
+  if(CM)S.tables.forEach(t=>tableGeom(t).seats.forEach(q=>{if(m[q.key])m[q.key].y=q.y;}));
+  for(const k in m){m[k].nb=m[k].nb.filter(x=>m[x]);m[k].across=m[k].across.filter(x=>m[x]);}
+  return m;
+}
+/* rule types: verb shown between the names */
+const RTYPES={
+  yes:{icon:ic('heart'),good:1,en:'next to',da:'ved siden af',lenS:'Sits next to',ldS:'Sidder ved siden af'},
+  across:{icon:ic('arrow-up-down'),good:1,en:'across from',da:'overfor',lenS:'Sits across from',ldS:'Sidder overfor'},
+  table:{icon:ic('circle-dot'),good:1,en:'same table as',da:'samme bord som',lenS:'Same table as',ldS:'Samme bord som'},
+  no:{icon:ic('ban'),good:0,en:'not next to',da:'ikke ved siden af',lenS:'Not next to',ldS:'Ikke ved siden af'},
+  soft:{icon:ic('circle-minus'),good:0,en:'preferably not next to',da:'helst ikke ved siden af',lenS:'Preferably not next to',ldS:'Helst ikke ved siden af'},
+  nottable:{icon:ic('split'),good:0,en:'different table from',da:'andet bord end',lenS:'Different table from',ldS:'Andet bord end'}
+};
+RTYPES.diff=RTYPES.nottable;
+const verb=t=>L(RTYPES[t].en,RTYPES[t].da);
+function ruleText(r){return `${G(r.a)?.name} ${verb(r.type)} ${names([r.b,...(r.or||[])])}${r.kids&&r.type==='yes'?L(' (their kids may sit between)',' (deres børn må sidde imellem)'):''}`;}
+
+/* social layer (guided setup): group = who knows whom, style = talk|easy|quiet.
+   Research: strangers talk best when similar (Cuperman & Ickes 2009); the lonely guest who knows nobody nearby is the main failure (Table Talk Tuning 2026);
+   conversation happens with direct neighbours and across (Sommer 1959). Soft weights so explicit rules always win. */
+function social(where,seats,TB,hit,assign){
+  const pair=new Set();S.rules.forEach(r=>{if(r.type==='yes'||r.type==='across'||r.type==='table')[r.b,...(r.or||[])].forEach(b=>{pair.add(r.a+'-'+b);pair.add(b+'-'+r.a);});});
+  const knows=(a,b)=>(a.group&&a.group===b.group)||pair.has(a.id+'-'+b.id)||(b.parents||[]).includes(a.id)||(a.parents||[]).includes(b.id)||((a.parents||[]).length&&(a.parents||[]).some(p=>(b.parents||[]).includes(p)));
+  const near=g=>{const k=where[g.id];return k?[...seats[k].nb,...(seats[k].across||[])].map(x=>G(assign[x])).filter(Boolean):[];};
+  const tabT={};
+  for(const g of S.guests){if(g.type!=='adult'||!where[g.id])continue;const t=TB[where[g.id].split(':')[0]];if(!t||t.kids)continue;
+    (tabT[t.id]=tabT[t.id]||{t,n:0,talk:0}).n++;if(g.style==='talk')tabT[t.id].talk++;
+    const nb=near(g);if(!nb.length||!g.group)continue;
+    if(!nb.some(o=>knows(g,o)))hit(12,L(`Tip: ${g.name} doesn’t know anyone sitting nearby`,`Tip: ${g.name} kender ingen, der sidder tæt på`),[]);
+    if(g.style==='quiet'&&nb.filter(o=>o.style==='talk'&&!knows(g,o)).length>=2)hit(8,L(`Tip: quiet ${g.name} sits between two talkative strangers`,`Tip: stille ${g.name} sidder mellem to snakkesalige fremmede`),[]);}
+  const T=Object.values(tabT);if(T.length>1&&T.some(x=>x.talk>=2))T.filter(x=>!x.talk&&x.n>=3).forEach(x=>hit(6,L(`Tip: no one at ${x.t.name} to get the conversation going`,`Tip: ingen ved ${x.t.name} til at få snakken i gang`),[]));
+  return 0;}
+function evaluate(assign,seats,detail){
+  const where={};for(const k in assign)if(assign[k]!=null)where[assign[k]]=k;
+  const isNb=(a,b)=>{const sa=where[a],sb=where[b];return sa&&sb&&seats[sa].nb.includes(sb);};
+  const sameT=(a,b)=>{const sa=where[a],sb=where[b];return sa&&sb&&sa.split(':')[0]===sb.split(':')[0];};
+  let cost=0;const issues=[],bad=new Set(),TB={};S.tables.forEach(t=>TB[t.id]=t);const hasKT=S.tables.some(t=>t.kids);
+  const hit=(w,msg,ids)=>{cost+=w;if(detail){issues.push(msg);ids.forEach(i=>where[i]&&bad.add(where[i]));}};
+  if(detail){const need={},maxNb=Math.max(0,...Object.values(seats).map(x=>x.nb.length)),add=(a,b)=>{(need[a]=need[a]||new Set).add(b);(need[b]=need[b]||new Set).add(a);};
+    S.rules.filter(r=>r.type==='yes'&&!r.kids&&!(r.or||[]).length).forEach(r=>add(r.a,r.b));
+    S.guests.filter(g=>g.type==='kid'&&g.pmode==='next'&&(g.parents||[]).length===1).forEach(g=>add(g.id,g.parents[0]));
+    for(const id in need){const g=G(id);if(g&&need[id].size>maxNb)issues.push(L(
+      `Impossible: ${g.name} must sit next to ${need[id].size} people (${names([...need[id]])}) but a seat has at most ${maxNb} neighbours. Remove a “next to” rule, let a child sit “at the same table” as its parent, or count across the table as neighbours.`,
+      `Umuligt: ${g.name} skal sidde ved siden af ${need[id].size} personer (${names([...need[id]])}), men en plads har højst ${maxNb} sidemænd. Fjern en “ved siden af”-regel, lad et barn sidde “ved samme bord” som forælderen, eller lad pladsen overfor tælle som sidemand.`));}
+    S.guests.filter(g=>g.type==='kid'&&!(g.parents||[]).filter(G).length).forEach(g=>issues.push(L(`${g.name} (child) has no parent chosen`,`${g.name} (barn) har ingen forælder valgt`)));
+  }
+  const isAcross=(a,b)=>{const sa=where[a],sb=where[b];return sa&&sb&&(seats[sa].across||[]).includes(sb);};
+  const viaKids=(a,b)=>{const sa=where[a],sb=where[b];if(!sa||!sb)return false;const seen=new Set([sa]),q=[sa];
+    while(q.length){const k=q.shift();for(const n of seats[k].nb){if(n===sb)return true;if(seen.has(n))continue;seen.add(n);const o=G(assign[n]);
+      if(o&&o.type==='kid'&&(o.parents||[]).some(p=>p==a||p==b))q.push(n);}}return false;};
+  const RT={no:[(r,x)=>!isNb(r.a,x),100],yes:[(r,x)=>isNb(r.a,x)||(r.kids&&viaKids(r.a,x)),40],
+    across:[(r,x)=>isAcross(r.a,x),40],table:[(r,x)=>sameT(r.a,x),30],soft:[(r,x)=>!isNb(r.a,x),15],nottable:[(r,x)=>!sameT(r.a,x),60]};
+  RT.diff=RT.nottable;
+  for(const r of S.rules){
+    const a=G(r.a),t=RT[r.type];if(!a||!t)continue;
+    const alts=[r.b,...(r.or||[])].filter(G);if(!alts.length)continue;
+    if(!alts.some(x=>t[0](r,x))){const w=(r.type==='yes'||r.type==='across')&&alts.some(x=>sameT(r.a,x))?20:t[1];
+      hit(w,L('Not met: ','Ikke opfyldt: ')+ruleText(r),[r.a,...alts]);}
+  }
+  for(const g of S.guests){
+    if(!where[g.id]){hit(1000,L(`${g.name} has no seat`,`${g.name} har ingen plads`),[]);continue;}
+    const myT=TB[where[g.id].split(':')[0]],ktOK=g.type==='kid'&&g.pmode==='kids';
+    if(myT&&myT.kids&&!ktOK)hit(g.type==='kid'?90:70,g.type==='kid'?L(`${g.name} is too small for the kids table`,`${g.name} er for lille til børnebordet`):L(`${g.name} (adult) is at the kids table`,`${g.name} (voksen) sidder ved børnebordet`),[g.id]);
+    if(ktOK&&hasKT){if(!myT||!myT.kids)hit(80,L(`${g.name} is not at the kids table`,`${g.name} sidder ikke ved børnebordet`),[g.id]);continue;}
+    if(g.type==='kid'&&g.parents&&g.parents.length){
+      const ps=g.parents.filter(G);
+      if(ps.length&&g.pmode!=='next'){
+        if(!ps.some(p=>sameT(g.id,p)))hit(90,L(`${g.name} is not at the same table as ${names(ps)}`,`${g.name} sidder ikke ved samme bord som ${names(ps)}`),[g.id]);
+      }else if(ps.length&&!ps.some(p=>isNb(g.id,p))){
+        hit(ps.some(p=>sameT(g.id,p))?50:90,L(`${g.name} is not next to ${names(ps)}`,`${g.name} sidder ikke ved siden af ${names(ps)}`),[g.id]);
+      }
+    }
+  }
+  if(!CM&&S.guests.some(g=>g.group||g.style))social(where,seats,TB,hit,assign);
+  if(CM){const NB=id=>{const s=where[id];return s?seats[s].nb.map(k=>G(assign[k])).filter(Boolean):[];};
+    const ys=Object.values(seats).map(s=>s.y).filter(y=>y!=null),y0=Math.min(...ys),y1=Math.max(...ys),cut=y0+Math.max(60,(y1-y0)*.34);
+    const seen=new Set(),past=new Set(S.settings.fresh!==false?(S.history||[]).slice(-4).flatMap(h=>h.pairs):[]);
+    for(const g of S.guests){if(!where[g.id])continue;
+      if(g.front&&seats[where[g.id]].y>cut)hit(40,L(`${g.name} should sit near the board`,`${g.name} skal sidde tæt på tavlen`),[g.id]);
+      for(const o of NB(g.id)){const k=Math.min(g.id,o.id)+'-'+Math.max(g.id,o.id);if(seen.has(k))continue;seen.add(k);
+        const a=g.level||'mid',b=o.level||'mid';
+        if(a!==b&&a!=='mid'&&b!=='mid')hit(30,L(`${g.name} and ${o.name} are too far apart in level (high next to low)`,`${g.name} og ${o.name} er for langt fra hinanden fagligt (høj ved siden af lav)`),[g.id,o.id]);
+        else if(a===b)cost+=a==='support'?10:a==='strong'?5:2;
+        if(past.has(k))hit(6,L(`Tip: ${g.name} and ${o.name} sat together last time`,`Tip: ${g.name} og ${o.name} sad sammen sidste gang`),[g.id,o.id]);}}}
+  return detail?{cost,issues,bad}:cost;
+}
+function arrange(){
+  const seats=allSeats(),keys=Object.keys(seats);
+  for(const k in S.locked)if(!seats[k]||!G(S.locked[k]))delete S.locked[k];
+  const lockedG=new Set(Object.values(S.locked).map(Number));
+  const free=keys.filter(k=>!(k in S.locked));
+  const people=S.guests.filter(g=>!lockedG.has(g.id)).map(g=>g.id);
+  if(people.length>free.length)return{error:L(`Not enough seats: ${S.guests.length} guests but only ${keys.length} seats. Add a table or more seats.`,`Ikke nok pladser: ${S.guests.length} gæster men kun ${keys.length} pladser. Tilføj et bord eller flere pladser.`)};
+  let best=null,bestC=Infinity;const t0=performance.now();
+  for(let run=0;run<12&&performance.now()-t0<2500;run++){
+    const slots=[...people,...Array(free.length-people.length).fill(null)];
+    for(let i=slots.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[slots[i],slots[j]]=[slots[j],slots[i]];}
+    const a={};for(const k in S.locked)a[k]=+S.locked[k];free.forEach((k,i)=>a[k]=slots[i]);
+    let c=evaluate(a,seats),T=50;
+    const iters=Math.min(60000,300*free.length+5000);
+    for(let it=0;it<iters&&c>0;it++){
+      const x=free[Math.random()*free.length|0],y=free[Math.random()*free.length|0];
+      if(x===y||a[x]===a[y])continue;
+      [a[x],a[y]]=[a[y],a[x]];
+      const c2=evaluate(a,seats);
+      if(c2<=c||Math.random()<Math.exp((c-c2)/T))c=c2;else[a[x],a[y]]=[a[y],a[x]];
+      T=Math.max(0.05,T*0.9995);
+    }
+    if(c<bestC){bestC=c;best={...a};}
+    if(bestC===0)break;
+  }
+  S.assign=best;save();return{ok:true};
+}
+function migrate(){
+  S.rules=S.rules||[];S.assign=S.assign||{};S.locked=S.locked||{};S.settings=S.settings||{across:false};S.guests=S.guests||[];S.tables=S.tables||[];
+  S.tables.forEach(t=>{t.side=Math.max(1,Math.min(100,parseInt(t.side??t.seats)||4));if(t.side2!=null)t.side2=Math.max(1,Math.min(100,parseInt(t.side2)||t.side));
+    if(t.endL===undefined){t.endL=(t.ends==='one'||t.ends==='both'||t.ends===undefined)?1:0;t.endR=(t.ends==='both'||t.ends===undefined)?1:0;
+      for(const m of[S.assign,S.locked]){if((t.id+':L')in m){m[t.id+':L0']=m[t.id+':L'];delete m[t.id+':L'];}if((t.id+':E')in m){m[t.id+':E0']=m[t.id+':E'];delete m[t.id+':E'];}}}
+    delete t.ends;delete t.seats;if(t.x===undefined){t.x=0;t.y=0;t.rot=0;}});
+  /* class mode: one-time switch of old two-sided group tables to one-sided desks facing the board */
+  if(CM&&!S.settings.desks){S.settings.desks=1;S.settings.floor=true;
+    if(S.tables.length&&!S.tables.some(t=>t.desk)){const n=Math.max(S.guests.length,S.tables.reduce((a,t)=>a+capOf(t),0)),c=Math.max(4,Math.ceil(n/6));
+      S.tables=deskLayout(Math.max(3,Math.ceil(n/(2*c))),c,S.nextId||100);S.nextId=(S.nextId||100)+S.tables.length;S.assign={};S.locked={};}}
+  if(CM)S.settings.floor=true;
+  S.guests.forEach(g=>{g.parents=g.parents||[];if(!g.pmode)g.pmode='next';if(CM){g.type='adult';g.level=g.level||'mid';}});
+  if(S.tables.length&&S.tables.every(t=>!t.x&&!t.y)){let y=0;S.tables.forEach(t=>{t.y=y;const b=tableGeom(t).box;y+=b[3]-b[1]+180;});}
+  S.nextId=Math.max(S.nextId||1,...S.guests.map(g=>g.id+1),...S.tables.map(t=>t.id+1),...S.rules.map(r=>r.id+1));
+}
+</script>
+<script>
+/* =========================================================
+   Bordplan – UI
+   ========================================================= */
+const $=s=>document.querySelector(s);
+let view=(location.hash.match(/^#(tables|guests|rules|plan|guide)$/)||[])[1]||(S.guide&&S.guide.step!=='done'?'guide':!S.guide&&!S.guests.length?'guide':S.guests.length?'plan':'tables');
+let sel=null,moveMode=false,justDragged=false;
+const STEPS=[['tables',CM?'layout-grid':'utensils',L('Tables','Borde')],['guests',CM?'graduation-cap':'users',CM?L('Students','Elever'):L('Guests','Gæster')],['rules','handshake',L('Rules','Regler')],['plan',CM?'school':'armchair',L('Seating','Bordplan')]];
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600);}
+function go(v){view=v;history.replaceState(null,'',location.pathname+location.search+'#'+v);render();scrollTo(0,0);$('#main').focus({preventScroll:true});}
+function commit(){save();render();}
+function stepper(val,fn,min,max,label){return `<span class="stepper" role="group" aria-label="${esc(label)}"><button aria-label="−" onclick="${fn}(${Math.max(min,val-1)})" ${val<=min?'disabled':''}>−</button><output aria-live="polite">${val}</output><button aria-label="+" onclick="${fn}(${Math.min(max,val+1)})" ${val>=max?'disabled':''}>+</button></span>`;}
+function seg(opts,cur,fn,label){return `<span class="seg" role="group" aria-label="${esc(label||'')}">${opts.map(([v,t])=>`<button aria-pressed="${v===cur}" onclick="${fn}('${v}')">${t}</button>`).join('')}</span>`;}
+function sw(on,fn,label){return `<span class="switch"><input type="checkbox" role="switch" ${on?'checked':''} onchange="${fn}(this.checked)" aria-label="${esc(label)}"><span></span></span>`;}
+
+/* ---------- header / nav ---------- */
+function renderNav(){
+  const seats=allSeats(),ns=Object.keys(seats).length,ev=evaluate(S.assign||{},seats,true),assigned=Object.values(S.assign||{}).some(v=>v!=null);
+  const badge={tables:[ns,ns>=S.guests.length&&ns?'ok':S.guests.length?'bad':''],guests:[S.guests.length,S.guests.some(g=>g.type==='kid'&&!g.parents.filter(G).length)?'bad':''],rules:[S.rules.length,''],plan:assigned?(n=>[n||'✓',n?'bad':'ok'])(ev.issues.filter(x=>!/^Tip:/.test(x)).length):['','']};
+  $('#steps').innerHTML=STEPS.map(([v,i,t])=>`<button ${v===view?'aria-current="page"':''} onclick="go('${v}')"><span class="ic" aria-hidden="true">${ic(i)}</span><span>${t}</span>${badge[v][0]!==''?`<span class="n ${badge[v][1]}">${badge[v][0]}</span>`:''}</button>`).join('');
+  const e=$('#evName');if(document.activeElement!==e)e.value=S.event||'';
+  document.title=(S.event?S.event+' · ':'')+L('Seating Planner','Bordplan');
+}
+$('#evName').placeholder=L('Name your event','Navngiv din begivenhed');
+$('#evName').oninput=e=>{S.event=e.target.value;save();document.title=(S.event?S.event+' · ':'')+L('Seating Planner','Bordplan');};
+$('#menuBtn').setAttribute('aria-label',L('Menu','Menu'));
+
+/* ---------- TABLES ---------- */
+function setT(id,f,v){const t=S.tables.find(t=>t.id==id);if(!t)return;
+  if(f==='side'||f==='side2')v=Math.max(1,Math.min(100,+v||1));if(f==='endL'||f==='endR')v=Math.max(0,Math.min(20,+v||0));t[f]=v;commit();}
+function addTable(shape){const y=S.tables.length?Math.max(...S.tables.map(t=>tableGeom(t).box[3]))+(CM?103:180):0;
+  if(CM&&shape==='desk'){S.tables.push({id:nid(),name:L('Desk ','Bord ')+(S.tables.length+1),shape:'rect',desk:true,dir:0,side:2,endL:0,endR:0,x:0,y,rot:0});commit();return;}
+  S.tables.push({id:nid(),name:L('Table ','Bord ')+(S.tables.length+1),shape:shape||'rect',side:shape==='round'?8:4,endL:shape==='round'?0:1,endR:shape==='round'?0:1,x:0,y,rot:0});commit();
+  setTimeout(()=>{const c=[...document.querySelectorAll('.tcard')].pop();c&&c.scrollIntoView({behavior:'smooth',block:'center'});},50);}
+function delTable(id){const t=S.tables.find(t=>t.id==id);if(!confirm(L(`Delete ${t.name}?`,`Slet ${t.name}?`)))return;S.tables=S.tables.filter(t=>t.id!=id);commit();}
+function dupTable(id){const t=S.tables.find(t=>t.id==id);const y=Math.max(...S.tables.map(t=>tableGeom(t).box[3]))+180;S.tables.push({...t,id:nid(),name:L('Table ','Bord ')+(S.tables.length+1),x:0,y});commit();}
+function capOf(t){return seatsOf(t).length;}
+let clsR=3,clsC=0;
+function classCard(){const n=S.guests.length,c=clsC||Math.max(4,Math.ceil(n/(2*clsR)));
+  return `<li class="card" style="display:block;padding:16px"><b>${L('Standard classroom','Standard klasselokale')}</b><p class="muted" style="margin:4px 0 8px">${L('Two-person desks in rows, all facing the board. Change the layout on the Seating page: “Move tables” lets you drag, join and turn desks.','Topersoners borde i rækker, der alle vender mod tavlen. Ret opstillingen på Bordplan-siden: “Flyt borde” lader dig trække, sætte sammen og dreje bordene.')}</p>
+   <div class="kv"><span>${L('Rows','Rækker')}</span>${stepper(clsR,'(v=>{clsR=v;render()})',1,10,L('Rows','Rækker'))}</div>
+   <div class="kv"><span>${L('Desks per row','Borde pr. række')}</span>${stepper(c,'(v=>{clsC=v;render()})',1,12,L('Desks per row','Borde pr. række'))}</div>
+   <div class="kv"><span class="muted">${L('Seats','Pladser')}</span><b>${clsR*c*2}</b></div>
+   <button class="btn primary" onclick="buildClass(${clsR},${c})">${ic('layout-grid')} ${L('Set up the room','Stil lokalet op')}</button></li>`;}
+function buildClass(r,c){askOk(L('Set up the room','Stil lokalet op'),L('This replaces all tables with the standard classroom. Students and rules are kept; the seating is cleared.','Dette erstatter alle borde med standard klasselokalet. Elever og regler beholdes; pladserne ryddes.'),L('Set up','Stil op'),()=>{S.tables=deskLayout(r,c,S.nextId);S.nextId+=r*c;S.settings.floor=true;S.assign={};S.locked={};commit();toast(L('Room set up – see Seating','Lokalet er stillet op – se Bordplan'));});}
+function deskCard(t){return `<li class="card tcard" style="display:block;border:0;padding:16px"><div class="row"><label class="sr" for="tn${t.id}">${L('Table name','Bordnavn')}</label><input id="tn${t.id}" class="field grow" style="font-weight:600" value="${esc(t.name)}" onchange="setT(${t.id},'name',this.value)">
+  <button class="icon" aria-label="${L('Turn','Drej')} ${esc(t.name)}" title="${L('Turn 90°','Drej 90°')}" onclick="rotGroup(${t.id})">${ic('rotate-cw')}</button>
+  <button class="icon" aria-label="${L('Delete','Slet')} ${esc(t.name)}" title="${L('Delete','Slet')}" onclick="delTable(${t.id})">${ic('trash-2')}</button></div>
+  <div class="kv" style="margin-top:8px"><span>${L('Seats at this desk','Pladser ved bordet')}</span>${stepper(t.side,`(v=>setT(${t.id},'side',v))`,1,6,L('Seats','Pladser'))}</div></li>`;}
+let pat='line',patIds=[];
+function vTables(){
+  const ns=Object.keys(allSeats()).length,ng=S.guests.length;
+  return `<div class="narrow"><h1>${L('Tables','Borde')}</h1><p class="lead">${L('Add the tables you have and how many people fit at each.','Tilføj de borde du har, og hvor mange der kan sidde ved hvert.')}</p>
+  <div class="summary" style="margin-bottom:12px"><div class="card"><b>${S.tables.length}</b>${L('tables','borde')}</div><div class="card"><b class="${ng>ns?'bad':''}">${ns}</b>${L('seats','pladser')}</div><div class="card"><b>${ng}</b>${CM?L('students','elever'):L('guests','gæster')}</div></div>
+  ${ng>ns?`<div class="status bad" role="alert">${L(`You need ${ng-ns} more seat(s).`,`Du mangler ${ng-ns} plads(er).`)}</div>`:''}
+  <ul class="list" style="display:grid;gap:12px" aria-label="${L('Tables','Borde')}">${CM?classCard():''}${S.tables.map(t=>t.desk?deskCard(t):`<li class="card tcard" style="display:block;border:0;padding:16px">
+    <div class="row"><label class="sr" for="tn${t.id}">${L('Table name','Bordnavn')}</label><input id="tn${t.id}" class="field grow" style="font-weight:600" value="${esc(t.name)}" onchange="setT(${t.id},'name',this.value)">
+    <button class="icon" aria-label="${L('Duplicate','Kopiér')} ${esc(t.name)}" title="${L('Duplicate','Kopiér')}" onclick="dupTable(${t.id})">${ic('copy')}</button>
+    <button class="icon" aria-label="${L('Delete','Slet')} ${esc(t.name)}" title="${L('Delete','Slet')}" onclick="delTable(${t.id})">${ic('trash-2')}</button></div>
+    <div class="kv" style="margin-top:8px"><span>${L('Shape','Form')}</span>${seg([['rect',ic('rectangle-horizontal')+' '+L('Long','Langbord')],['round',ic('circle')+' '+L('Round','Rundt')]],t.shape,`(v=>setT(${t.id},'shape',v))`,L('Shape','Form'))}</div>
+    ${t.shape==='round'?`<div class="kv"><span>${L('Seats','Pladser')}</span>${stepper(t.side,`(v=>setT(${t.id},'side',v))`,1,100,L('Seats','Pladser'))}</div>`
+     :t.side2==null?`<div class="kv"><span>${L('Seats per long side','Pladser pr. langside')}</span>${stepper(t.side,`(v=>setT(${t.id},'side',v))`,1,100,L('Seats per long side','Pladser pr. langside'))}</div>`
+     :`<div class="kv"><span>${L('Long side 1 (top)','Langside 1 (øverst)')}</span>${stepper(t.side,`(v=>setT(${t.id},'side',v))`,1,100,L('Long side 1','Langside 1'))}</div>
+       <div class="kv"><span>${L('Long side 2 (bottom)','Langside 2 (nederst)')}</span>${stepper(t.side2,`(v=>setT(${t.id},'side2',v))`,1,100,L('Long side 2','Langside 2'))}</div>`}
+    <div class="kv"><label class="grow" for="kt${t.id}">${L('Kids table','Børnebord')}<br><small class="muted">${L('Only children set to “Kids table” sit here','Kun børn sat til “Børnebord” sidder her')}</small></label><span class="switch"><input type="checkbox" role="switch" id="kt${t.id}" ${t.kids?'checked':''} onchange="const t=S.tables.find(x=>x.id==${t.id});if(this.checked)t.kids=true;else delete t.kids;commit()"><span></span></span></div>
+    ${t.shape==='rect'?`<div class="kv"><label class="grow" for="ds${t.id}">${L('Different number on each long side','Forskelligt antal på hver langside')}</label><span class="switch"><input type="checkbox" role="switch" id="ds${t.id}" ${t.side2!=null?'checked':''} onchange="const t=S.tables.find(x=>x.id==${t.id});if(this.checked)t.side2=t.side;else delete t.side2;commit()"><span></span></span></div>`:''}
+    ${t.shape==='rect'?`<div class="kv"><span>${L('Left end','Venstre ende')}</span>${stepper(t.endL||0,`(v=>setT(${t.id},'endL',v))`,0,20,L('Left end','Venstre ende'))}</div>
+    <div class="kv"><span>${L('Right end','Højre ende')}</span>${stepper(t.endR||0,`(v=>setT(${t.id},'endR',v))`,0,20,L('Right end','Højre ende'))}</div>`:''}
+    <div class="kv"><span class="muted">${L('Total','I alt')}</span><b>${capOf(t)} ${L('seats','pladser')}</b></div>
+  </li>`).join('')}</ul>
+  <div class="row" style="margin:12px 0 20px">${CM?`<button class="btn primary big grow" onclick="addTable('desk')">${ic('plus')} ${L('Desk','Bord')}</button>`:''}<button class="btn ${CM?'':'primary'} big grow" onclick="addTable('rect')">${ic('plus')} ${L('Long table','Langbord')}</button><button class="btn big grow" onclick="addTable('round')">${ic('plus')} ${L('Round table','Rundt bord')}</button></div>
+  <h2>${L('Options','Indstillinger')}</h2>
+  <div class="card">
+   <div class="kv"><span class="grow"><b>${L('Across counts as “next to”','Overfor tæller som “ved siden af”')}</b><br><span class="muted">${L('The person directly opposite is also a neighbour.','Personen lige overfor er også sidemand.')}</span></span>${sw(S.settings.across,'(v=>{S.settings.across=v;commit()})',L('Across counts as next to','Overfor tæller som ved siden af'))}</div>
+   <div class="kv"><span class="grow"><b>${L('Room layout – join tables','Rumplan – sæt borde sammen')}</b><br><span class="muted">${L('Place tables in the room. Tables that touch become one long table, and seats where they meet disappear.','Placér bordene i rummet. Borde der rører hinanden bliver ét langt bord, og pladser hvor de mødes forsvinder.')}</span></span>${sw(S.settings.floor,'(v=>{S.settings.floor=v;commit()})',L('Room layout','Rumplan'))}</div>
+   ${S.settings.floor?vPattern():''}
+  </div>
+  <button class="btn primary big wide" style="margin-top:8px" onclick="go('guests')">${L('Next: Guests','Næste: Gæster')}</button></div>`;
+}
+function vPattern(){
+  const rect=S.tables.filter(t=>t.shape==='rect');patIds=patIds.filter(id=>rect.some(t=>t.id==id));
+  const need={line:1,L:2,T:2,U:3,E:3}[pat];
+  return `<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px"><b>${L('Quick shapes','Hurtige former')}</b><p class="muted" style="margin:4px 0 8px">${L('Pick a shape, then tap the long tables in order. The first one is the main table.','Vælg en form, og tryk så på langbordene i rækkefølge. Det første er hovedbordet.')}</p>
+   <div class="chips" style="margin-bottom:10px">${[['line','━ '+L('Line','Linje')],['L','┗ L'],['T','┳ T'],['U','⊐ U'],['E','E '+L('comb','kam')]].map(([v,t])=>`<button class="chip" aria-pressed="${pat===v}" onclick="pat='${v}';render()">${t}</button>`).join('')}</div>
+   <div class="chips" style="margin-bottom:10px">${rect.map(t=>{const i=patIds.indexOf(t.id);return `<button class="chip" aria-pressed="${i>=0}" onclick="togPat(${t.id})">${i>=0?`<span class="o">${i+1}</span>`:''}${esc(t.name)}</button>`;}).join('')||`<span class="muted">${L('Add long tables first.','Tilføj langborde først.')}</span>`}</div>
+   <button class="btn" ${patIds.length<need?'disabled':''} onclick="applyPattern()">${L('Arrange tables','Stil bordene op')}</button> <span class="muted">${patIds.length<need?L(`Choose at least ${need}`,`Vælg mindst ${need}`):''}</span>
+   <p class="muted">${L('You can also drag tables around under Seating, Move tables.','Du kan også trække bordene rundt under Bordplan, Flyt borde.')}</p></div>`;
+}
+function togPat(id){const i=patIds.indexOf(id);i>=0?patIds.splice(i,1):patIds.push(id);render();}
+function applyPattern(){
+  const ts=patIds.map(id=>S.tables.find(t=>t.id==id)).filter(t=>t&&t.shape==='rect');const len=t=>LEN(t)*U;
+  if(pat==='line'){let x=0;ts.forEach(t=>{t.rot=0;t.x=x;t.y=0;x+=len(t);});}
+  else if(pat==='L'){const[a,b]=ts;a.rot=1;a.x=0;a.y=0;b.rot=0;b.x=D;b.y=len(a)-D;ts.slice(2).forEach(t=>{t.rot=0;t.x=D+len(b);t.y=len(a)-D;});}
+  else if(pat==='T'){const[a,...r]=ts;a.rot=0;a.x=0;a.y=0;let y=D;r.forEach(t=>{t.rot=1;t.x=(len(a)-D)/2;t.y=y;y+=len(t);});}
+  else{const[a,...arms]=ts;a.rot=1;a.x=0;a.y=0;const Lg=len(a);arms.forEach((t,i)=>{t.rot=0;t.x=D;t.y=arms.length===1?0:Math.round(i*(Lg-D)/(arms.length-1));});}
+  const maxY=Math.max(...ts.map(t=>(t.y||0)+(t.rot?len(t):D)))+140;let x=0;
+  S.tables.filter(t=>!ts.includes(t)).forEach(t=>{const g=tableGeom(t);t.x=x;t.y=maxY;x+=(g.box[2]-g.box[0])+200;});
+  S.settings.floor=true;commit();toast(L('Tables arranged – see Seating','Bordene er stillet op – se Bordplan'));}
+
+/* ---------- GUESTS ---------- */
+let newType='adult';
+function addGuest(){const i=$('#gName'),n=i.value.trim();if(!n)return i.focus();
+  const g={id:nid(),name:n,type:CM?'adult':newType,parents:[],pmode:'next'};if(CM)g.level=newLevel;S.guests.push(g);i.value='';commit();$('#gName').focus();
+  if(!CM&&newType==='kid')guestSheet(g.id);}
+let newLevel='mid';const lvSeg=(cur,fn)=>seg(Object.keys(LV).map(k=>[k,`<span class="lvd" style="background:${LV[k].c}"></span>`+lvName(k)]),cur,fn,L('Academic level','Fagligt niveau'));
+function bulkAdd(){const b=$('#bulk');let n=0;b.value.split('\n').map(s=>s.trim()).filter(Boolean).forEach(l=>{const kid=/\*$/.test(l);if(CM){const lv=/\+$/.test(l)?'strong':/-$/.test(l)?'support':'mid';S.guests.push({id:nid(),name:l.replace(/[+\-*]$/,'').trim(),type:'adult',level:lv,parents:[],pmode:'next'});}else S.guests.push({id:nid(),name:l.replace(/\*$/,'').trim(),type:kid?'kid':'adult',parents:[],pmode:'next'});n++;});b.value='';commit();toast(L(`${n} guests added`,`${n} gæster tilføjet`));}
+function delGuest(id){S.guests=S.guests.filter(g=>g.id!=id);S.rules=S.rules.filter(r=>r.a!=id&&r.b!=id).map(r=>({...r,or:(r.or||[]).filter(x=>x!=id)}));S.guests.forEach(g=>g.parents=(g.parents||[]).filter(p=>p!=id));
+  for(const k in S.assign)if(S.assign[k]==id)S.assign[k]=null;for(const k in S.locked)if(S.locked[k]==id)delete S.locked[k];save();}
+function kidsOf(id){return S.guests.filter(k=>k.type==='kid'&&k.parents.includes(id));}
+function guestRow(g){const ps=g.parents.filter(G),kids=kidsOf(g.id),nr=S.rules.filter(r=>r.a==g.id||r.b==g.id||(r.or||[]).includes(g.id)).length;
+  let sub=g.type==='kid'?(g.pmode==='kids'?L('Kids table','Børnebord'):ps.length?`${g.pmode==='table'?L('same table as','samme bord som'):L('next to','ved siden af')} ${esc(names(ps))}`:`<span class="pill bad">${L('Choose parent','Vælg forælder')}</span>`):(kids.length?L('Parent of ','Forælder til ')+esc(kids.map(k=>k.name).join(', ')):'');
+  return `<li><button class="rule" onclick="guestSheet(${g.id})" aria-label="${L('Edit','Redigér')} ${esc(g.name)}"><span class="ri" aria-hidden="true">${ic(CM?'graduation-cap':g.type==='kid'?'baby':'user')}</span><span class="grow"><b>${esc(g.name)}</b>${CM?` <span class="pill"><span class="lvd" style="background:${LV[g.level||'mid'].c}"></span>${lvName(g.level)}</span>${g.front?` <span class="pill">${ic('presentation')} ${L('board','tavle')}</span>`:''}`:''}${g.type==='kid'?` <span class="pill kid">${L('child','barn')}</span>`:''}${nr?` <span class="pill">${nr} ${L(nr>1?'rules':'rule',nr>1?'regler':'regel')}</span>`:''}<br><span class="muted">${sub}</span></span><span class="muted">${ic('chevron-right')}</span></button></li>`;}
+function vGuests(){
+  const ad=S.guests.filter(g=>g.type==='adult').length;
+  return `<div class="narrow"><div class="hrow"><h1>${CM?L('Students','Elever'):L('Guests','Gæster')}</h1>${CM?`<button class="btn" onclick="gdRestart()">${ic('list-checks')} ${L('Guided setup','Guidet opsætning')}</button>`:`<button class="btn" onclick="gdRestart()">${ic('list-checks')} ${L('Guided setup','Guidet opsætning')}</button>`}</div><p class="lead">${CM?L('Add the class and set each student’s academic level. Partners are paired by neighbouring levels (high with middle, middle with low – never high with low), as in the Danish SYKL research. Use Rules for friendships: “next to” for good pairs, “not next to” for pairs that should be split.','Tilføj klassen og sæt hver elevs faglige niveau. Makkere sættes sammen efter nabo-niveauer (høj med middel, middel med lav – aldrig høj med lav), som i den danske SYKL-forskning. Brug Regler til de sociale relationer: “ved siden af” for gode makkere, “ikke ved siden af” for elever, der skal skilles ad.'):L('Add everyone. Children are seated near their parents automatically.','Tilføj alle. Børn bliver automatisk placeret tæt på deres forældre.')}</p>
+  <form class="card" onsubmit="event.preventDefault();addGuest()"><label class="lbl" for="gName">${CM?L('New student','Ny elev'):L('New guest','Ny gæst')}</label>
+   <div class="row"><input id="gName" class="field grow" autocomplete="off" enterkeyhint="done" placeholder="${L('Name','Navn')}" style="min-width:160px">
+   ${CM?lvSeg(newLevel,"(v=>{newLevel=v;const x=$('#gName').value;render();$('#gName').value=x;$('#gName').focus()})"):seg([['adult',ic('user')+' '+L('Adult','Voksen')],['kid',ic('baby')+' '+L('Child','Barn')]],newType,"(v=>{newType=v;const x=$('#gName').value;render();$('#gName').value=x;$('#gName').focus()})",L('Type','Type'))}
+   <button class="btn primary" type="submit">${ic('plus')} ${L('Add','Tilføj')}</button></div>
+   <details style="margin-top:8px"><summary>${L('Paste a whole list','Indsæt en hel liste')}</summary>
+   <p class="muted">${CM?L('One name per line. Put + after a high-level student and - after a low-level one, e.g. “Emma+”, “Ole-”.','Ét navn pr. linje. Skriv + efter en elev på højt niveau og - efter en på lavt niveau, fx “Emma+”, “Ole-”.'):L('One name per line. Put * after a child’s name, e.g. “Emma*”.','Ét navn pr. linje. Skriv * efter et barns navn, fx “Emma*”.')}</p>
+   <label class="sr" for="bulk">${L('Names','Navne')}</label><textarea id="bulk" class="field" placeholder="${CM?'Anna+&#10;Bo&#10;Emma-':'Anna&#10;Bo&#10;Emma*'}"></textarea><button type="button" class="btn" style="margin-top:8px" onclick="bulkAdd()">${L('Add all','Tilføj alle')}</button></details>
+  </form>
+  ${S.guests.length?`<div class="card"><div class="row" style="justify-content:space-between"><b>${S.guests.length} ${CM?L('students','elever'):L('guests','gæster')}</b><span class="muted">${CM?Object.keys(LV).map(k=>S.guests.filter(g=>(g.level||'mid')===k).length+' '+lvName(k).toLowerCase()).join(' · '):`${ad} ${L('adults','voksne')} · ${S.guests.length-ad} ${L('children','børn')}`}</span></div>
+  <ul class="list" aria-label="${CM?L('Students','Elever'):L('Guests','Gæster')}">${S.guests.map(guestRow).join('')}</ul></div>`:`<div class="card empty">${CM?L('No students yet.','Ingen elever endnu.'):L('No guests yet.','Ingen gæster endnu.')}</div>`}
+  <button class="btn primary big wide" onclick="go('rules')">${L('Next: Rules','Næste: Regler')}</button></div>`;
+}
+/* guest sheet – edit name/type, parents (for kids) or children (for adults) */
+let GS=null;
+function guestSheet(id){const g=G(id);GS={group:g.group||'',style:g.style||'easy',id,name:g.name,type:g.type,level:g.level||'mid',front:!!g.front,parents:[...g.parents.filter(G)],pmode:g.pmode||'next',kids:kidsOf(id).map(k=>k.id)};drawGS();openDlg();}
+function drawGS(){const g=G(GS.id),adults=S.guests.filter(x=>x.type==='adult'&&x.id!==GS.id),kids=S.guests.filter(x=>x.type==='kid'&&x.id!==GS.id);
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${esc(g.name)}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb">
+   <label class="lbl" for="gsN">${L('Name','Navn')}</label><input id="gsN" class="field" value="${esc(GS.name)}" oninput="GS.name=this.value">
+   ${CM?`<div class="lbl">${L('Academic level','Fagligt niveau')}</div>${lvSeg(GS.level,"(v=>{GS.name=$('#gsN').value;GS.level=v;drawGS()})")}<div class="lbl">${L('Seat','Plads')}</div><button class="chip" aria-pressed="${!!GS.front}" onclick="GS.name=$('#gsN').value;GS.front=!GS.front;drawGS()">${ic('presentation')} ${L('Near the board','Tæt på tavlen')}</button>`:`   <div class="lbl">${L('Type','Type')}</div>${seg([['adult',ic('user')+' '+L('Adult','Voksen')],['kid',ic('baby')+' '+L('Child','Barn')]],GS.type,"(v=>{GS.name=$('#gsN').value;GS.type=v;drawGS()})")}
+   ${GS.type==='kid'?`<div class="lbl">${L('Parents','Forældre')}</div><p class="muted" style="margin-top:-4px">${L('Tap one or more. Sitting by any of them is fine.','Tryk på én eller flere. Det er fint at sidde ved én af dem.')}</p>
+    <div class="chips">${adults.map(a=>`<button class="chip" aria-pressed="${GS.parents.includes(a.id)}" onclick="GS.name=$('#gsN').value;GS.parents=GS.parents.includes(${a.id})?GS.parents.filter(x=>x!=${a.id}):[...GS.parents,${a.id}];drawGS()">${esc(a.name)}</button>`).join('')||`<span class="muted">${L('Add adults first.','Tilføj voksne først.')}</span>`}</div>
+    <div class="lbl">${L('How close','Hvor tæt')}</div>${seg([['next',L('Next to parent','Ved forælder')],['table',L('Same table','Samme bord')],['kids',L('Kids table','Børnebord')]],GS.pmode,"(v=>{GS.name=$('#gsN').value;GS.pmode=v;drawGS()})")}<p class="muted">${GS.pmode==='kids'?(S.tables.some(t=>t.kids)?L('Sits at the kids table, away from the parents.','Sidder ved børnebordet, væk fra forældrene.'):L('No kids table yet – turn on “Kids table” on a table under Tables. Until then: same table as a parent.','Intet børnebord endnu – slå “Børnebord” til på et bord under Borde. Indtil da: samme bord som en forælder.')):L('Use this for children too small to sit away from their parents.','Brug dette til børn, der er for små til at sidde væk fra forældrene.')}</p>`
+   :`<div class="lbl">${L('Children','Børn')}</div><p class="muted" style="margin-top:-4px">${L('Tap the children of this person.','Tryk på denne persons børn.')}</p>
+    <div class="chips">${kids.map(k=>`<button class="chip kid" aria-pressed="${GS.kids.includes(k.id)}" onclick="GS.name=$('#gsN').value;GS.kids=GS.kids.includes(${k.id})?GS.kids.filter(x=>x!=${k.id}):[...GS.kids,${k.id}];drawGS()">${esc(k.name)}</button>`).join('')||`<span class="muted">${L('No children added.','Ingen børn tilføjet.')}</span>`}</div>`}
+`}
+   ${!CM&&GS.type==='adult'?`<label class="lbl" for="gsG">${L('Group (people who know each other)','Gruppe (folk der kender hinanden)')}</label><input id="gsG" class="field" list="gsGl" value="${esc(GS.group)}" oninput="GS.group=this.value" placeholder="${L('e.g. Family, Work','fx Familie, Arbejde')}"><datalist id="gsGl">${gdGroups().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+   <div class="lbl">${L('At a party','Til fest')}</div>${seg(gdStyles(),GS.style,"(v=>{GS.name=$('#gsN').value;GS.group=$('#gsG').value;GS.style=v;drawGS()})")}`:''}
+   <div class="lbl">${L('Rules','Regler')}</div><ul class="list">${S.rules.filter(r=>r.a==GS.id||r.b==GS.id||(r.or||[]).includes(GS.id)).map(r=>`<li><button class="rule" onclick="ruleSheet(${r.id})"><span class="ri">${RTYPES[r.type].icon}</span><span class="grow">${esc(ruleText(r))}</span></button></li>`).join('')}</ul>
+   <button class="btn ghost" onclick="ruleSheet(null,${GS.id})">${ic('plus')} ${L('Add rule for','Tilføj regel for')} ${esc(g.name)}</button>
+  </div><div class="sf"><button class="btn danger" onclick="if(confirm('${L('Delete this guest?','Slet denne gæst?')}')){delGuest(${GS.id});closeDlg();render()}">${L('Delete','Slet')}</button><button class="btn primary" onclick="saveGS()">${L('Done','Færdig')}</button></div>`;}
+function saveGS(){const g=G(GS.id);g.name=($('#gsN').value.trim()||g.name);g.type=GS.type;if(CM){g.level=GS.level;g.front=GS.front||undefined;}if(!CM&&GS.type==='adult'){g.group=($('#gsG')?.value||'').trim();g.style=GS.style==='easy'?undefined:GS.style;}
+  if(GS.type==='kid'){g.parents=GS.parents;g.pmode=GS.pmode;}else{g.parents=[];S.guests.forEach(k=>{if(k.type!=='kid'||k.id===g.id)return;const has=k.parents.includes(g.id),want=GS.kids.includes(k.id);if(want&&!has)k.parents.push(g.id);if(!want&&has)k.parents=k.parents.filter(p=>p!=g.id);});}
+  closeDlg();commit();}
+
+/* ---------- RULES ---------- */
+let RS=null;
+function ruleSheet(id,who){const r=id!=null&&S.rules.find(x=>x.id===id);RS=r?{id:r.id,a:r.a,type:r.type==='diff'?'nottable':r.type,b:[r.b,...(r.or||[])].filter(G),kids:!!r.kids}:{id:null,a:who||null,type:'yes',b:[],kids:false};drawRS();openDlg();}
+function drawRS(){const order=['yes','across','table','soft','no','nottable'];
+  const chip=(g,on,fn)=>`<button class="chip ${g.type==='kid'?'kid':''}" aria-pressed="${on}" onclick="${fn}">${esc(g.name)}</button>`;
+  const ok=RS.a&&RS.b.length;
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${RS.id?L('Edit rule','Redigér regel'):L('New rule','Ny regel')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb">
+   <div class="lbl">1 · ${L('Who?','Hvem?')}</div><div class="chips">${S.guests.map(g=>chip(g,RS.a===g.id,`RS.a=${g.id};RS.b=RS.b.filter(x=>x!=${g.id});drawRS()`)).join('')}</div>
+   <div class="lbl">2 · ${L('Should…','Skal…')}</div><div class="types">${order.map(t=>`<button class="type" aria-pressed="${RS.type===t}" onclick="RS.type='${t}';drawRS()"><span class="ri" aria-hidden="true">${RTYPES[t].icon}</span><b>${L(RTYPES[t].lenS,RTYPES[t].ldS)}</b></button>`).join('')}</div>
+   <div class="lbl">3 · ${L('Whom?','Hvem?')}</div><p class="muted" style="margin-top:-4px">${L('Pick more than one to mean “either of them”.','Vælg flere for at sige “en af dem”.')}</p>
+   <div class="chips">${S.guests.filter(g=>g.id!==RS.a).map(g=>chip(g,RS.b.includes(g.id),`RS.b=RS.b.includes(${g.id})?RS.b.filter(x=>x!=${g.id}):[...RS.b,${g.id}];drawRS()`)).join('')}</div>
+   ${RS.type==='yes'?`<div class="kv" style="margin-top:12px"><span class="grow">${L('Their own children may sit between them','Deres egne børn må sidde imellem')}</span>${sw(RS.kids,'(v=>{RS.kids=v;drawRS()})',L('Children between OK','Børn imellem OK'))}</div>`:''}
+   <div class="lbl">${L('Preview','Forhåndsvisning')}</div><div class="preview" aria-live="polite">${ok?esc(ruleText({a:RS.a,b:RS.b[0],or:RS.b.slice(1),type:RS.type,kids:RS.kids})):`<span class="muted">${L('Choose two people','Vælg to personer')}</span>`}</div>
+  </div><div class="sf">${RS.id?`<button class="btn danger" onclick="S.rules=S.rules.filter(r=>r.id!==${RS.id});closeDlg();commit()">${L('Delete','Slet')}</button>`:`<button class="btn" onclick="closeDlg()">${L('Cancel','Annullér')}</button>`}<button class="btn primary" ${ok?'':'disabled'} onclick="saveRS()">${L('Save','Gem')}</button></div>`;}
+function saveRS(){const r={id:RS.id??nid(),a:RS.a,b:RS.b[0],type:RS.type};if(RS.b.length>1)r.or=RS.b.slice(1);if(RS.kids&&RS.type==='yes')r.kids=true;
+  const i=S.rules.findIndex(x=>x.id===r.id);i>=0?S.rules[i]=r:S.rules.push(r);closeDlg();commit();}
+function vRules(){
+  const good=S.rules.filter(r=>G(r.a)&&G(r.b)),grp=[[1,L('Together','Sammen')],[0,L('Apart','Adskilt')]];
+  return `<div class="narrow"><h1>${L('Rules','Regler')}</h1><p class="lead">${L('Who should – or shouldn’t – sit together. Optional: skip this if you don’t need it.','Hvem der skal – eller ikke skal – sidde sammen. Valgfrit: spring over hvis du ikke har brug for det.')}</p>
+  <button class="btn primary big wide" style="margin-bottom:12px" ${S.guests.length<2?'disabled':''} onclick="ruleSheet()">${ic('plus')} ${L('New rule','Ny regel')}</button>
+  ${S.guests.length<2?`<p class="muted">${L('Add at least two guests first.','Tilføj mindst to gæster først.')}</p>`:''}
+  ${good.length?grp.map(([gd,h])=>{const rs=good.filter(r=>RTYPES[r.type].good===gd);return rs.length?`<h2>${h}</h2><div class="card"><ul class="list">${rs.map(r=>`<li><button class="rule" onclick="ruleSheet(${r.id})" aria-label="${L('Edit rule','Redigér regel')}: ${esc(ruleText(r))}"><span class="ri ${gd?'ok':'bad'}" aria-hidden="true">${RTYPES[r.type].icon}</span><span class="grow">${esc(ruleText(r))}</span></button><button class="del" aria-label="${L('Delete rule','Slet regel')}: ${esc(ruleText(r))}" onclick="S.rules=S.rules.filter(x=>x.id!==${r.id});commit()">${ic('x')}</button></li>`).join('')}</ul></div>`:'';}).join('')
+   :`<div class="card empty">${L('No rules yet.','Ingen regler endnu.')}</div>`}
+  ${S.guests.some(g=>g.type==='kid')?`<p class="muted">${L('Children follow their parents automatically – set that up under Guests.','Børn følger automatisk deres forældre – det indstilles under Gæster.')}</p>`:''}
+  <button class="btn primary big wide" onclick="go('plan')">${L('Next: Seating','Næste: Bordplan')}</button></div>`;
+}
+</script>
+<script>
+/* ---------- GUIDED SETUP (event mode) ----------
+   S.guide = {step:'names'|'kids'|'conflicts'|'done', i:index of guest card}
+   Creates normal guests / parents / rules; afterwards the user lands in the regular screens. */
+function gdState(){if(!S.guide)S.guide={step:'names',i:0};return S.guide;}
+function gdGo(step,i){const g=gdState();g.step=step;g.i=i||0;save();render();scrollTo(0,0);}
+function gdAdvanced(){gdState().step='done';save();go(S.guests.length?'guests':'tables');}
+function gdRestart(){if($('#dlg').open)closeDlg();gdState();S.guide.step='names';S.guide.i=0;save();go('guide');}
+function gdSteps(cur){const st=[['names',L('Names','Navne')],['kids',L('Children','Børn')],['groups',L('Who knows whom','Hvem kender hvem')],['style',L('Party style','Festtype')],['conflicts',L('Who to keep apart','Hvem skal holdes adskilt')],['sum',L('Summary','Oversigt')]];
+  const ci=st.findIndex(s=>s[0]===cur);
+  return `<ol class="gdsteps" aria-label="${L('Guide steps','Guidens trin')}">${st.map((s,i)=>`<li class="${i<ci?'done':i===ci?'cur':''}" ${i===ci?'aria-current="step"':''}><span>${i<ci?ic('check'):i+1}</span>${s[1]}</li>`).join('')}</ol>`;}
+function gdHead(cur,title,lead){return `<div class="gdtop">${gdSteps(cur)}<button class="btn ghost gdadv" onclick="gdAdvanced()">${ic('settings-2')} ${L('Advanced','Avanceret')}</button></div><h1>${title}</h1><p class="lead">${lead}</p>`;}
+/* step 1: names */
+function gdAdd(){const t=$('#gdIn'),lines=t.value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return t.focus();
+  const mk=l=>{const kid=/\*$/.test(l),n=l.replace(/\*$/,'').trim();if(!n)return null;const g={id:nid(),name:n,type:kid?'kid':'adult',parents:[],pmode:'next'};S.guests.push(g);return g;};
+  for(const l of lines){const parts=l.split(/\s*(?:&|\+|\bog\b|\band\b)\s*/i).filter(Boolean);const gs=parts.map(mk).filter(Boolean);
+    if(gs.length===2&&gs.every(g=>g.type==='adult'))S.rules.push({id:nid(),a:gs[0].id,b:gs[1].id,type:'yes',kids:true,couple:true});}
+  t.value='';commit();$('#gdIn').focus();}
+function gdToggleKid(id){const g=G(id);if(g.type==='kid'){g.type='adult';g.parents=[];}else{g.type='kid';g.pmode=g.pmode||'next';S.guests.forEach(k=>k.parents=(k.parents||[]).filter(p=>p!=id));}commit();}
+function gdDel(id){S.guests=S.guests.filter(g=>g.id!=id);S.guests.forEach(k=>k.parents=(k.parents||[]).filter(p=>p!=id));S.rules=S.rules.filter(r=>r.a!=id&&r.b!=id);commit();}
+function gdNames(){const gs=S.guests;
+  return gdHead('names',L('Who is coming?','Hvem kommer?'),L('Write everyone’s name, one per line (or separated by commas). Write a couple with &, e.g. “Anna & Bo” – they are seated together. Put * after a child, e.g. “Emma*”. You can also tap a name below to switch between adult and child.','Skriv alle navne, ét pr. linje (eller adskilt med komma). Skriv et par med &, fx “Anna & Bo” – de bliver sat sammen. Skriv * efter et barn, fx “Emma*”. Du kan også trykke på et navn herunder for at skifte mellem voksen og barn.'))+
+  `<div class="card"><label class="lbl" for="gdIn">${L('Names','Navne')}</label><textarea class="field" id="gdIn" rows="5" placeholder="Anna &amp; Bo&#10;Carl&#10;Emma*" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))gdAdd()"></textarea>
+   <div class="row" style="margin-top:10px"><button class="btn primary" onclick="gdAdd()">${ic('plus')} ${L('Add','Tilføj')}</button></div></div>
+  ${gs.length?`<div class="card"><div class="lbl">${gs.length} ${L('guests','gæster')} · ${gs.filter(g=>g.type==='kid').length} ${L('children','børn')}</div><div class="chips">${gs.map(g=>`<span class="gdname"><button class="chip ${g.type==='kid'?'kid':''}" aria-pressed="false" onclick="gdToggleKid(${g.id})" title="${L('Switch adult/child','Skift voksen/barn')}">${ic(g.type==='kid'?'baby':'user')} ${esc(g.name)}${gdPartner(g.id)?' '+ic('heart'):''}</button><button class="icon sm" aria-label="${L('Remove','Fjern')} ${esc(g.name)}" onclick="gdDel(${g.id})">${ic('x')}</button></span>`).join('')}</div></div>`:''}
+  <button class="btn primary big wide" ${gs.length?'':'disabled'} onclick="gdGo(S.guests.some(g=>g.type==='kid')?'kids':'groups')">${L('Next','Næste')}</button>`;}
+/* step 2: kids -> parents */
+function gdPar(k,p){const g=G(k);g.parents=g.parents||[];g.parents=g.parents.includes(p)?g.parents.filter(x=>x!=p):[...g.parents,p].slice(-2);commit();}
+function gdKids(){const kids=S.guests.filter(g=>g.type==='kid'),ad=S.guests.filter(g=>g.type==='adult'),miss=kids.filter(k=>!(k.parents||[]).filter(G).length).length;
+  return gdHead('kids',L('Who are the children’s parents?','Hvem er børnenes forældre?'),L('Tap one or two parents for each child. Children are seated next to a parent.','Tryk på en eller to forældre for hvert barn. Børn bliver sat ved siden af en forælder.'))+
+  kids.map(k=>`<div class="card"><div class="lbl">${ic('baby')} <b>${esc(k.name)}</b></div><div class="chips">${ad.map(a=>`<button class="chip" aria-pressed="${(k.parents||[]).includes(a.id)}" onclick="gdPar(${k.id},${a.id})">${esc(a.name)}</button>`).join('')||`<span class="muted">${L('Add an adult first.','Tilføj først en voksen.')}</span>`}</div></div>`).join('')+
+  (miss?`<p class="muted">${L(`${miss} child(ren) without a parent – you can also do this later.`,`${miss} barn/børn uden forælder – det kan også gøres senere.`)}</p>`:'')+
+  `<div class="row"><button class="btn big grow" onclick="gdGo('names')">${L('Back','Tilbage')}</button><button class="btn primary big grow" onclick="gdGo('groups')">${L('Next','Næste')}</button></div>`;}
+
+const gdPartner=id=>{const r=S.rules.find(r=>r.couple&&(r.a==id||r.b==id));return r?G(r.a==id?r.b:r.a):null;};
+/* step 3: groups – who knows whom */
+const gdGroups=()=>[...new Set([...(S.guide?.groups||[]),...S.guests.map(g=>g.group).filter(Boolean)])];
+const gdStyles=()=>[['talk',ic('megaphone')+' '+L('Talkative','Snakkesalig')],['easy',ic('smile')+' '+L('Easy-going','Afslappet')],['quiet',ic('feather')+' '+L('Quiet','Stille')]];
+function gdNewGroup(n){n=(n||'').trim();if(!n)return;const g=gdState();g.groups=gdGroups();if(!g.groups.includes(n))g.groups.push(n);g.cur=n;save();render();}
+function gdSetGroup(id){const g=G(id),cur=gdState().cur;if(!cur)return;const v=g.group===cur?'':cur;g.group=v;const p=gdPartner(id);if(p&&(!p.group||p.group===cur))p.group=v;commit();}
+function gdDelGroup(n){S.guide.groups=gdGroups().filter(x=>x!==n);S.guests.forEach(g=>{if(g.group===n)g.group='';});if(S.guide.cur===n)S.guide.cur=S.guide.groups[0];commit();}
+function gdGroupsV(){const st=gdState(),gs=gdGroups(),cur=gs.includes(st.cur)?st.cur:gs[0],ad=S.guests.filter(g=>g.type==='adult'),none=ad.filter(g=>!g.group).length;st.cur=cur;
+  const sug=[L('Family','Familie'),L('Friends','Venner'),L('Work','Arbejde'),L('Neighbours','Naboer'),L('Sports club','Sportsklub')].filter(x=>!gs.includes(x));
+  return gdHead('groups',L('Who knows whom?','Hvem kender hvem?'),L('Make a group for each circle of people who know each other – family, work, friends. Then tap everyone in it. The plan makes sure nobody ends up next to only strangers.','Lav en gruppe for hver kreds af folk, der kender hinanden – familie, arbejde, venner. Tryk så på alle i den. Planen sørger for, at ingen ender med kun fremmede ved siden af sig.'))+
+  `<div class="card"><div class="lbl">${L('Groups','Grupper')}</div><div class="chips">${gs.map(n=>`<span class="gdname"><button class="chip" aria-pressed="${n===cur}" onclick="gdState().cur=this.dataset.n;save();render()" data-n="${esc(n)}">${ic('users-round')} ${esc(n)} <small>${S.guests.filter(g=>g.group===n).length}</small></button><button class="icon sm" aria-label="${L('Remove group','Fjern gruppe')} ${esc(n)}" data-n="${esc(n)}" onclick="gdDelGroup(this.dataset.n)">${ic('x')}</button></span>`).join('')}
+   ${sug.map(n=>`<button class="chip ghost" onclick="gdNewGroup(this.dataset.n)" data-n="${esc(n)}">${ic('plus')} ${esc(n)}</button>`).join('')}</div>
+   <form class="row" style="margin-top:10px" onsubmit="event.preventDefault();gdNewGroup($('#gdG').value)"><label class="sr" for="gdG">${L('New group','Ny gruppe')}</label><input id="gdG" class="field grow" placeholder="${L('Other group…','Anden gruppe…')}"><button class="btn">${ic('plus')} ${L('Add','Tilføj')}</button></form></div>
+  ${cur?`<div class="card"><div class="lbl">${L(`Tap everyone in “${esc(cur)}”`,`Tryk på alle i “${esc(cur)}”`)}</div><div class="chips">${ad.map(g=>`<button class="chip" aria-pressed="${g.group===cur}" onclick="gdSetGroup(${g.id})">${esc(g.name)}${g.group&&g.group!==cur?` <small class="muted">· ${esc(g.group)}</small>`:''}</button>`).join('')}</div>
+   <p class="muted" style="margin:10px 0 0">${L('A couple follows along. Children automatically count as knowing their parents.','Et par følger med. Børn tæller automatisk som kendt af deres forældre.')}${none?' '+L(`${none} without a group.`,`${none} uden gruppe.`):''}</p></div>`:''}
+  <div class="row"><button class="btn big grow" onclick="gdGo(S.guests.some(g=>g.type==='kid')?'kids':'names')">${L('Back','Tilbage')}</button><button class="btn primary big grow" onclick="gdGo('style')">${gs.length?L('Next','Næste'):L('Skip','Spring over')}</button></div>`;}
+/* step 4: party style – one screen */
+function gdSetStyle(id,v){const g=G(id);g.style=v==='easy'?undefined:v;commit();}
+function gdStyleV(){const ad=S.guests.filter(g=>g.type==='adult'),c=k=>ad.filter(g=>(g.style||'easy')===k).length;
+  return gdHead('style',L('How is each guest at a party?','Hvordan er hver gæst til fest?'),L('Only change the ones that stand out – everyone starts as “easy-going”. Quiet guests get someone they know beside them and are not squeezed between two talkative strangers; talkative guests are spread over the tables.','Ændr kun dem, der skiller sig ud – alle starter som “afslappet”. Stille gæster får en, de kender, ved siden af sig og bliver ikke klemt inde mellem to snakkesalige fremmede; de snakkesalige fordeles på bordene.'))+
+  `<div class="card"><div class="muted" style="margin-bottom:8px">${c('talk')} ${L('talkative','snakkesalige')} · ${c('easy')} ${L('easy-going','afslappede')} · ${c('quiet')} ${L('quiet','stille')}</div><ul class="list gdstyle">${ad.map(g=>`<li><span class="grow">${esc(g.name)}</span>${seg(gdStyles(),g.style||'easy',`(v=>gdSetStyle(${g.id},v))`,g.name)}</li>`).join('')}</ul></div>
+  <div class="row"><button class="btn big grow" onclick="gdGo('groups')">${L('Back','Tilbage')}</button><button class="btn primary big grow" onclick="gdGo('conflicts')">${L('Next','Næste')}</button></div>`;}
+/* step 5: one card per guest */
+const gdPeople=()=>S.guests.filter(g=>g.type==='adult');
+const gdRule=(a,b)=>S.rules.find(r=>(r.type==='soft'||r.type==='no'||r.type==='nottable'||r.type==='diff')&&!(r.or||[]).length&&((r.a==a&&r.b==b)||(r.a==b&&r.b==a)));
+function gdConf(a,b){const r=gdRule(a,b);if(r)S.rules=S.rules.filter(x=>x!==r);else S.rules.push({id:nid(),a,b,type:'no'});commit();}
+function gdHow(a,b,t){const r=gdRule(a,b);if(r)r.type=t;commit();}
+function gdConflicts(){const P=gdPeople(),i=Math.min(gdState().i,Math.max(0,P.length-1)),me=P[i];
+  if(!me)return gdHead('conflicts',L('Who to keep apart','Hvem skal holdes adskilt'),L('There are no adults to ask about.','Der er ingen voksne at spørge om.'))+`<button class="btn primary big wide" onclick="gdGo('sum')">${L('Next','Næste')}</button>`;
+  const others=S.guests.filter(g=>g.id!==me.id),picked=others.filter(o=>gdRule(me.id,o.id));
+  return gdHead('conflicts',L(`Is there anyone ${esc(me.name)} doesn’t get along with?`,`Er der nogen, ${esc(me.name)} ikke går godt i spænd med?`),L(`Guest ${i+1} of ${P.length}. Most people have no one – then just tap “No one”.`,`Gæst ${i+1} af ${P.length}. De fleste har ingen – så tryk bare “Ingen”.`))+
+  `<div class="gdbar" role="progressbar" aria-valuemin="0" aria-valuemax="${P.length}" aria-valuenow="${i+1}"><span style="width:${(i+1)/P.length*100}%"></span></div>
+  <div class="card"><div class="lbl">${L('Tap names','Tryk på navne')}</div><div class="chips">${others.map(o=>`<button class="chip ${o.type==='kid'?'kid':''}" aria-pressed="${!!gdRule(me.id,o.id)}" onclick="gdConf(${me.id},${o.id})">${ic(o.type==='kid'?'baby':'user')} ${esc(o.name)}</button>`).join('')}</div></div>
+  ${picked.map(o=>{const r=gdRule(me.id,o.id),t=r.type==='diff'?'nottable':r.type;return `<div class="card"><div class="lbl">${L(`How far apart should ${esc(me.name)} and ${esc(o.name)} be?`,`Hvor langt fra hinanden skal ${esc(me.name)} og ${esc(o.name)} sidde?`)}</div>
+    <div class="gdopts" role="radiogroup">${[['soft','circle-minus',L('Rather not next to each other','Helst ikke ved siden af hinanden'),L('Not a real problem – just not best friends. Kept apart if it is easy.','Ikke et rigtigt problem – bare ikke bedste venner. Holdes adskilt, hvis det er nemt.')],['no','arrow-left-right',L('Not next to each other','Ikke ved siden af hinanden'),L('They may sit at the same table, just not side by side.','De må gerne sidde ved samme bord, bare ikke side om side.')],['nottable','split',L('Not at the same table','Ikke ved samme bord'),L('They are placed at different tables.','De bliver sat ved forskellige borde.')]].map(([v,icn,h,d])=>`<button class="gdopt" role="radio" aria-checked="${t===v}" onclick="gdHow(${me.id},${o.id},'${v}')">${ic(icn)}<span><b>${h}</b><small>${d}</small></span></button>`).join('')}</div></div>`;}).join('')}
+  <div class="row"><button class="btn big grow" onclick="${i?`gdGo('conflicts',${i-1})`:`gdGo('style')`}">${L('Back','Tilbage')}</button>
+  <button class="btn primary big grow" onclick="${i<P.length-1?`gdGo('conflicts',${i+1})`:`gdGo('sum')`}">${picked.length?L('Next','Næste'):L('No one','Ingen')}</button></div>
+  ${i<P.length-1?`<button class="btn ghost wide" onclick="gdGo('sum')">${L('Skip the rest','Spring resten over')}</button>`:''}`;}
+/* step 4: summary */
+function gdFinish(){gdState().step='done';save();go('tables');toast(L('Now set up the tables – then press Seating','Sæt nu bordene op – tryk derefter på Bordplan'));}
+function gdSum(){const kids=S.guests.filter(g=>g.type==='kid'),rs=S.rules.filter(r=>gdRule(r.a,r.b)===r);
+  return gdHead('sum',L('All set','Klar'),L('This is what the guide created. Next you set up the tables, then the seating plan is made automatically. You can change everything afterwards under Guests and Rules.','Det her har guiden lavet. Bagefter sætter du bordene op, og så laves bordplanen automatisk. Du kan ændre alt bagefter under Gæster og Regler.'))+
+  `<div class="card"><div class="kv"><span>${ic('users')} ${L('Guests','Gæster')}</span><b>${S.guests.length}</b></div><div class="kv"><span>${ic('baby')} ${L('Children with parents','Børn med forældre')}</span><b>${kids.filter(k=>(k.parents||[]).filter(G).length).length}/${kids.length}</b></div><div class="kv"><span>${ic('handshake')} ${L('Keep-apart rules','Hold-adskilt-regler')}</span><b>${rs.length}</b></div><div class="kv"><span>${ic('heart')} ${L('Couples seated together','Par sat sammen')}</span><b>${S.rules.filter(r=>r.couple).length}</b></div><div class="kv"><span>${ic('users-round')} ${L('Guests in a group','Gæster i en gruppe')}</span><b>${S.guests.filter(g=>g.type==='adult'&&g.group).length}/${S.guests.filter(g=>g.type==='adult').length}</b></div><div class="kv"><span>${ic('megaphone')} ${L('Talkative / quiet','Snakkesalige / stille')}</span><b>${S.guests.filter(g=>g.style==='talk').length} / ${S.guests.filter(g=>g.style==='quiet').length}</b></div></div>
+  <div class="card"><div class="lbl">${ic('wand-sparkles')} ${L('The plan will automatically try to','Planen prøver automatisk at')}</div><ul class="gdlist"><li>${L('give everyone at least one person they know beside or across from them','give alle mindst én, de kender, ved siden af eller overfor')}</li><li>${L('keep quiet guests away from two talkative strangers','holde stille gæster væk fra to snakkesalige fremmede')}</li><li>${L('spread the talkative guests over the tables','fordele de snakkesalige på bordene')}</li></ul><p class="muted" style="margin:6px 0 0">${L('These are wishes, not rules – your own rules always win. Unmet wishes show as “Tip” on the seating plan.','Det er ønsker, ikke regler – dine egne regler vinder altid. Ikke-opfyldte ønsker vises som “Tip” på bordplanen.')}</p></div>
+  ${rs.length?`<div class="card"><ul class="list">${rs.map(r=>`<li><span class="grow">${esc(ruleText(r))}</span></li>`).join('')}</ul></div>`:''}
+  <div class="row"><button class="btn big grow" onclick="gdGo('conflicts',Math.max(0,gdPeople().length-1))">${L('Back','Tilbage')}</button><button class="btn primary big grow" onclick="gdFinish()">${L('Next: Tables','Næste: Borde')}</button></div>`;}
+function vGuide(){const s=gdState().step;return `<div class="gd">${({names:gdNames,kids:gdKids,groups:gdGroupsV,style:gdStyleV,conflicts:gdConflicts,sum:gdSum}[s]||gdNames)()}</div>`;}
+</script>
+<script>
+/* ---------- GUIDED SETUP (class mode) ----------
+   Steps: names → level (high/middle/low, SYKL neighbouring levels) → seat needs → relations → rotation → summary.
+   Uses S.guide (class storage is separate from event storage). */
+function cgSteps(cur){const st=[['names',L('Students','Elever')],['level',L('Level','Niveau')],['needs',L('Seat needs','Pladsbehov')],['rel',L('Relations','Relationer')],['rot',L('Rotation','Rotation')],['sum',L('Summary','Oversigt')]],ci=st.findIndex(s=>s[0]===cur);
+  return `<ol class="gdsteps" aria-label="${L('Guide steps','Guidens trin')}">${st.map((s,i)=>`<li class="${i<ci?'done':i===ci?'cur':''}" ${i===ci?'aria-current="step"':''}><span>${i<ci?ic('check'):i+1}</span>${s[1]}</li>`).join('')}</ol>`;}
+function cgHead(cur,title,lead){return `<div class="gdtop">${cgSteps(cur)}<button class="btn ghost gdadv" onclick="gdAdvanced()">${ic('settings-2')} ${L('Advanced','Avanceret')}</button></div><h1>${title}</h1><p class="lead">${lead}</p>`;}
+function cgNav(back,next,dis){return `<div class="row">${back?`<button class="btn big grow" onclick="gdGo('${back}')">${L('Back','Tilbage')}</button>`:''}<button class="btn primary big grow" ${dis?'disabled':''} onclick="gdGo('${next}')">${L('Next','Næste')}</button></div>`;}
+function cgAdd(){const t=$('#gdIn'),ls=t.value.split(/\n|,/).map(x=>x.trim()).filter(Boolean);if(!ls.length)return t.focus();
+  ls.forEach(l=>{const n=l.replace(/[+\-]$/,'').trim();if(n)S.guests.push({id:nid(),name:n,type:'adult',level:/\+$/.test(l)?'strong':/-$/.test(l)?'support':'mid',parents:[],pmode:'next'});});t.value='';commit();$('#gdIn').focus();}
+function cgNames(){const gs=S.guests;
+  return cgHead('names',L('Who is in the class?','Hvem går i klassen?'),L('Write every student’s name, one per line or separated by commas. Your list stays in this browser – nothing is sent anywhere.','Skriv alle elevernes navne, ét pr. linje eller adskilt med komma. Listen bliver i denne browser – intet sendes nogen steder hen.'))+
+  `<div class="card"><label class="lbl" for="gdIn">${L('Names','Navne')}</label><textarea class="field" id="gdIn" rows="6" placeholder="Anna&#10;Bo&#10;Carl" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))cgAdd()"></textarea>
+   <div class="row" style="margin-top:10px"><button class="btn primary" onclick="cgAdd()">${ic('plus')} ${L('Add','Tilføj')}</button></div></div>
+  ${gs.length?`<div class="card"><div class="lbl">${gs.length} ${L('students','elever')}</div><div class="chips">${gs.map(g=>`<span class="gdname"><span class="chip">${ic('graduation-cap')} ${esc(g.name)}</span><button class="icon sm" aria-label="${L('Remove','Fjern')} ${esc(g.name)}" onclick="gdDel(${g.id})">${ic('x')}</button></span>`).join('')}</div></div>`:''}`+cgNav('','level',!gs.length);}
+function cgLv(id,v){G(id).level=v;commit();}
+function cgLevel(){const c=k=>S.guests.filter(g=>(g.level||'mid')===k).length,n=S.guests.length||1;
+  return cgHead('level',L('Academic level','Fagligt niveau'),L('Split the class into three: about a quarter high, half middle and a quarter low. Partners are then paired by neighbouring levels – high with middle, middle with low, never high with low. This is the rule from the Danish SYKL research on student pairs: students help each other best when they are close in level, and both get to explain.','Del klassen i tre: cirka en fjerdedel høj, halvdelen middel og en fjerdedel lav. Makkere sættes så sammen efter nabo-niveauer – høj med middel, middel med lav, aldrig høj med lav. Det er reglen fra den danske SYKL-forskning i elevmakkere: elever hjælper hinanden bedst, når de er tæt på hinanden fagligt, og begge får lov at forklare.'))+
+  `<div class="card"><div class="row" style="gap:14px">${Object.keys(LV).map(k=>`<span><span class="lvd" style="background:${LV[k].c}"></span> <b>${lvName(k)}</b> ${c(k)} <span class="muted">(${Math.round(100*c(k)/n)}% · ${L('aim','mål')} ${k==='mid'?50:25}%)</span></span>`).join('')}</div></div>
+  <div class="card"><ul class="list">${S.guests.map(g=>`<li><span class="grow"><b>${esc(g.name)}</b></span>${seg(Object.keys(LV).map(k=>[k,`<span class="lvd" style="background:${LV[k].c}"></span>`+lvName(k)]),g.level||'mid',`(v=>cgLv(${g.id},v))`,L('Level','Niveau')+' '+g.name)}</li>`).join('')}</ul></div>`+cgNav('names','needs');}
+function cgFront(id){const g=G(id);g.front=g.front?undefined:true;commit();}
+function cgNeeds(){const n=S.guests.filter(g=>g.front).length;
+  return cgHead('needs',L('Who needs to sit near the board?','Hvem skal sidde tæt på tavlen?'),L('Tap the students who should sit in the front – for example because of eyesight, hearing, or because they concentrate better close to the teacher (common advice for students with ADHD). Skip this if nobody needs it.','Tryk på de elever, der skal sidde forrest – fx på grund af syn, hørelse, eller fordi de koncentrerer sig bedre tæt på læreren (et almindeligt råd for elever med ADHD). Spring over, hvis ingen har brug for det.'))+
+  `<div class="card"><div class="lbl">${ic('presentation')} ${n} ${L('near the board','tæt på tavlen')}</div><div class="chips">${S.guests.map(g=>`<button class="chip" aria-pressed="${!!g.front}" onclick="cgFront(${g.id})">${g.front?ic('presentation')+' ':''}${esc(g.name)}</button>`).join('')}</div></div>`+cgNav('level','rel');}
+function cgPick(id){gdState().cur=id;save();render();}
+function cgRel(b){const a=gdState().cur;if(!a||a==b)return;const r=S.rules.find(r=>(r.a==a&&r.b==b||r.a==b&&r.b==a)&&!(r.or||[]).length&&(r.type==='yes'||r.type==='no'));
+  if(!r)S.rules.push({id:nid(),a,b,type:'yes'});else if(r.type==='yes')r.type='no';else S.rules=S.rules.filter(x=>x!==r);commit();}
+function cgRelV(){const st=gdState(),gs=S.guests,cur=G(st.cur)?st.cur:(gs[0]||{}).id;st.cur=cur;
+  const rel=b=>{const r=S.rules.find(r=>(r.a==cur&&r.b==b||r.a==b&&r.b==cur)&&!(r.or||[]).length&&(r.type==='yes'||r.type==='no'));return r?r.type:'';};
+  const all=S.rules.filter(r=>(r.type==='yes'||r.type==='no')&&!(r.or||[]).length);
+  return cgHead('rel',L('Who works well together – and who doesn’t?','Hvem arbejder godt sammen – og hvem gør ikke?'),L('Choose a student, then tap a classmate: once for “works well together”, twice for “keep apart”, three times to clear. Use it sparingly – mixing across friendships builds the class community.','Vælg en elev, og tryk så på en klassekammerat: én gang for “arbejder godt sammen”, to gange for “hold adskilt”, tre gange for at fjerne. Brug det med måde – at blande på tværs af venskaber styrker klassefællesskabet.'))+
+  `<div class="card"><div class="lbl">${L('Student','Elev')}</div><div class="chips">${gs.map(g=>`<button class="chip" aria-pressed="${g.id==cur}" onclick="cgPick(${g.id})">${esc(g.name)}</button>`).join('')}</div></div>
+  ${cur?`<div class="card"><div class="lbl">${L('Classmates of','Klassekammerater til')} <b>${esc(G(cur).name)}</b></div><div class="chips">${gs.filter(g=>g.id!=cur).map(g=>{const t=rel(g.id);return `<button class="chip ${t==='no'?'bad':''}" aria-pressed="${!!t}" onclick="cgRel(${g.id})">${t==='yes'?ic('handshake')+' ':t==='no'?ic('ban')+' ':''}${esc(g.name)}</button>`;}).join('')}</div></div>`:''}
+  ${all.length?`<div class="card"><ul class="list">${all.map(r=>`<li><span class="ri">${ic(r.type==='yes'?'handshake':'ban')}</span><span class="grow">${esc(ruleText(r))}</span></li>`).join('')}</ul></div>`:''}`+cgNav('needs','rot');}
+function cgSet(k,v){S.settings[k]=v;commit();}
+function cgRot(){const w=S.settings.rot||2;
+  return cgHead('rot',L('How often do they change seats?','Hvor tit skifter de plads?'),L('Danish teaching advice is to change seats or partners every 1–2 weeks with a visible random draw, so the students accept the plan. Change on a Wednesday or Thursday – not on a Monday or right after a holiday.','Dansk undervisningsråd er at skifte pladser eller makkere hver 1.–2. uge med en synlig lodtrækning, så eleverne accepterer planen. Skift om onsdagen eller torsdagen – ikke om mandagen eller lige efter en ferie.'))+
+  `<div class="card"><div class="lbl">${ic('calendar')} ${L('New seats every','Nye pladser hver')}</div>${seg([['1',L('week','uge')],['2',L('2 weeks','2. uge')],['4',L('4 weeks','4. uge')]],String(w),"(v=>cgSet('rot',+v))",L('Rotation','Rotation'))}</div>
+  <div class="card"><div class="row" style="justify-content:space-between"><span><b>${ic('history')} ${L('New partners each time','Nye makkere hver gang')}</b><br><span class="muted">${L('The app remembers the last four plans you save and tries to avoid seating the same two together again.','Appen husker de sidste fire planer, du gemmer, og prøver at undgå at sætte de samme to sammen igen.')}</span></span>${sw(S.settings.fresh!==false,"(v=>cgSet('fresh',v))",L('New partners each time','Nye makkere hver gang'))}</div></div>`+cgNav('rel','sum');}
+function cgFinish(){gdState().step='done';save();go('plan');}
+function cgSum(){const c=k=>S.guests.filter(g=>(g.level||'mid')===k).length,rs=S.rules.filter(r=>r.type==='yes'||r.type==='no');
+  return cgHead('sum',L('All set','Klar'),L('This is what the guide created. Press “Arrange seats” on the next screen. You can change everything afterwards under Students and Rules, and move desks under Tables.','Det her har guiden lavet. Tryk “Placér elever” på næste skærm. Du kan ændre alt bagefter under Elever og Regler og flytte borde under Borde.'))+
+  `<div class="card"><div class="kv"><span>${ic('graduation-cap')} ${L('Students','Elever')}</span><b>${S.guests.length}</b></div><div class="kv"><span>${ic('users')} ${L('High / middle / low','Høj / middel / lav')}</span><b>${c('strong')} / ${c('mid')} / ${c('support')}</b></div><div class="kv"><span>${ic('presentation')} ${L('Near the board','Tæt på tavlen')}</span><b>${S.guests.filter(g=>g.front).length}</b></div><div class="kv"><span>${ic('handshake')} ${L('Work well together','Arbejder godt sammen')}</span><b>${rs.filter(r=>r.type==='yes').length}</b></div><div class="kv"><span>${ic('ban')} ${L('Keep apart','Hold adskilt')}</span><b>${rs.filter(r=>r.type==='no').length}</b></div><div class="kv"><span>${ic('calendar')} ${L('New seats every','Nye pladser hver')}</span><b>${S.settings.rot||2} ${L('week(s)','uge(r)')}</b></div></div>
+  <div class="card"><div class="lbl">${ic('wand-sparkles')} ${L('The plan will automatically try to','Planen prøver automatisk at')}</div><ul class="gdlist"><li>${L('pair neighbouring levels: high with middle, middle with low – never high with low','sætte nabo-niveauer sammen: høj med middel, middel med lav – aldrig høj med lav')}</li><li>${L('seat the chosen students near the board','sætte de valgte elever tæt på tavlen')}</li><li>${L('follow your “works well together” and “keep apart” choices','følge dine valg om “arbejder godt sammen” og “hold adskilt”')}</li>${S.settings.fresh!==false?`<li>${L('give everyone new partners compared with the last saved plans','give alle nye makkere i forhold til de sidst gemte planer')}</li>`:''}</ul></div>
+  <div class="row"><button class="btn big grow" onclick="gdGo('rot')">${L('Back','Tilbage')}</button><button class="btn primary big grow" onclick="cgFinish()">${L('Next: Seating','Næste: Bordplan')}</button></div>`;}
+function vCGuide(){const s=gdState().step;return `<div class="gd">${({names:cgNames,level:cgLevel,needs:cgNeeds,rel:cgRelV,rot:cgRot,sum:cgSum}[s]||cgNames)()}</div>`;}
+/* seat history (class): save the current neighbour pairs so the next plan can give new partners */
+function curPairs(){const seats=allSeats(),A=S.assign||{},out=new Set();for(const k in seats){const a=A[k];if(a==null)continue;seats[k].nb.forEach(n=>{const b=A[n];if(b!=null&&b!=a)out.add(Math.min(a,b)+'-'+Math.max(a,b));});}return[...out];}
+function savePeriod(){S.history=(S.history||[]).concat([{d:Date.now(),pairs:curPairs()}]).slice(-8);commit();toast(L('Saved – the next plan will try to give new partners','Gemt – næste plan prøver at give nye makkere'));}
+function nextChange(){const h=(S.history||[]).slice(-1)[0];if(!h)return '';const d=new Date(h.d+(S.settings.rot||2)*7*864e5);while(d.getDay()!==3)d.setDate(d.getDate()+(d.getDay()<3?1:-1));return d.toLocaleDateString(LANG==='da'?'da-DK':'en-GB',{weekday:'long',day:'numeric',month:'long'});}
+</script>
+<script>
+/* ---------- PLAN ---------- */
+function seatEl(k,ev,extraCls){const gid=(S.assign||{})[k],g=gid!=null&&G(gid),lk=S.locked[k]!=null;
+  return `<div class="seat ${CM&&g?'lv-'+(g.level||'mid'):''} ${g?g.type:'empty'} ${ev.bad.has(k)?'bad':''} ${sel===k?'sel':''} ${lk?'locked':''} ${extraCls||''}" data-k="${k}" ${g?`data-g="${g.id}"`:''} role="button" tabindex="0" aria-label="${g?esc(g.name):L('Empty seat','Tom plads')}${lk?' ('+L('locked','låst')+')':''}">${g?esc(g.name)+`<button class="lk" tabindex="-1" aria-label="${lk?L('Unlock','Lås op'):L('Lock to this seat','Lås til pladsen')}" title="${lk?L('Unlock','Lås op'):L('Lock to this seat','Lås til pladsen')}" data-lock="${k}">${lk?ic('lock'):ic('lock-open')}</button>`:L('empty','tom')}</div>`;}
+function drawing(gs,ev,blocked,boardsMovable){
+  let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;
+  gs.forEach(g=>{[[g.box[0],g.box[1]],[g.box[2],g.box[3]],...g.seats.map(q=>[q.x,q.y])].forEach(([a,b])=>{mnx=Math.min(mnx,a);mny=Math.min(mny,b);mxx=Math.max(mxx,a);mxy=Math.max(mxy,b);});});
+  const cb=CM&&gs.length>1?90:0,ox=50-mnx,oy=26-mny+cb,W=mxx-mnx+100,H=mxy-mny+52+cb;
+  return {W,H,html:`<div class="inner" style="width:${W}px;height:${H}px">`+(cb?`<div class="chalk" style="left:${Math.max(30,W*.2)}px;width:${W-2*Math.max(30,W*.2)}px">${ic('presentation')} ${L('Board','Tavle')}</div>`:'')+gs.map(g=>{const b=g.box;
+    return `<div class="board ${boardsMovable?'move':''} ${g.t.desk?'desk':''} ${b[3]-b[1]>b[2]-b[0]?'vert':''}" ${boardsMovable?`data-t="${g.t.id}"`:''} style="left:${b[0]+ox}px;top:${b[1]+oy}px;width:${b[2]-b[0]}px;height:${b[3]-b[1]}px;${g.round?'border-radius:50%':''}">${esc(g.t.name)}${boardsMovable&&CM?`<button class="trot" data-rot="${g.t.id}" aria-label="${L('Turn','Drej')} ${esc(g.t.name)}" title="${L('Turn 90°','Drej 90°')}">${ic('rotate-cw')}</button>`:''}</div>`+
+      g.seats.filter(q=>!blocked||!blocked.has(q.key)).map(q=>seatEl(q.key,ev,'" style="left:'+(q.x+ox-44)+'px;top:'+(q.y+oy-20)+'px')).join('');}).join('')+'</div>'};
+}
+function fitAll(){const mx=innerWidth>=1000?1.6:1;document.querySelectorAll('#main .fit').forEach(f=>{const W=+f.dataset.w,H=+f.dataset.h,s=Math.min(mx,f.clientWidth/W);f.style.height=H*s+'px';f.firstElementChild.style.transform=`scale(${s})`;});}
+new ResizeObserver(()=>{fitAll();if(view==='plan'&&!S.settings.floor){const w=innerWidth<500;if(w!==fitAll._n){fitAll._n=w;render();}}}).observe(document.documentElement);
+function vPlan(){
+  const seats=allSeats(),ev=evaluate(S.assign||{},seats,true),assigned=Object.values(S.assign||{}).filter(v=>v!=null).length;
+  const unseated=S.guests.filter(g=>!Object.values(S.assign||{}).includes(g.id));
+  let st;
+  if(!S.guests.length)st=`<div class="status">${L('Add guests first.','Tilføj gæster først.')} <button class="btn ghost" onclick="go('guests')">${L('Go to guests','Gå til gæster')}</button></div>`;
+  else if(!assigned)st=`<div class="status">${L('Press “Arrange seats” and the planner places everyone for you. Then drag or tap two seats to swap.','Tryk “Placér gæster”, så placerer planlæggeren alle for dig. Træk eller tryk på to pladser for at bytte.')}</div>`;
+  else{const tips=ev.issues.filter(x=>/^Tip:/.test(x)),probs=ev.issues.filter(x=>!/^Tip:/.test(x));ev.issues=probs;st=(ev.issues.length?`<div class="status bad" role="status"><b>${ic('triangle-alert')} ${ev.issues.length} ${L('problem(s)','problem(er)')}</b> – ${L('arrange again, add seats or relax rules','placér igen, tilføj pladser eller løsn reglerne')}<ul>${ev.issues.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`:`<div class="status ok" role="status"><b>${ic('check')} ${L('All rules satisfied','Alle regler er opfyldt')}</b></div>`)+(tips.length?`<div class="status" role="note"><b>${ic('lightbulb')} ${tips.length} ${L('suggestion(s)','forslag')}</b> – ${L('wishes from the guided setup, not rules','ønsker fra guiden, ikke regler')}<ul>${tips.map(i=>`<li>${esc(i.replace(/^Tip: /,''))}</li>`).join('')}</ul></div>`:'');}
+  let body;
+  if(S.settings.floor){const F=floorInfo(),d=drawing(F.gs,ev,F.blocked,moveMode||CM);
+    body=`<div class="tcard"><div class="fit" data-w="${d.W}" data-h="${d.H}">${d.html}</div></div>`;}
+  else{const narrow=innerWidth<500;fitAll._n=narrow;
+    body=`<div class="tables">${S.tables.map(t=>{const g=tableGeom({...t,x:0,y:0,rot:0}),d=drawing([g],ev);
+      const list=narrow&&(t.shape==='round'?t.side>8:LEN(t)>3);
+      return `<section class="tcard" aria-label="${esc(t.name)}"><h3><span>${t.kids?ic('baby')+' ':''}${esc(t.name)}</span><span class="muted">${seatsOf(t).filter(s=>S.assign?.[s.key]!=null).length}/${capOf(t)}</span></h3>${list?`<ol class="slist">${seatsOf(t).order.map((s,i)=>`<li><span class="no">${i+1}</span>${seatEl(s.key,ev)}</li>`).join('')}</ol>`:`<div class="fit" data-w="${d.W}" data-h="${d.H}">${d.html}</div>`}</section>`;}).join('')}</div>`;}
+  return `<h1 class="sr">${L('Seating','Bordplan')}</h1>
+  <div class="planbar"><button class="btn primary big" onclick="doArrange()" ${S.guests.length?'':'disabled'}>${ic('shuffle')} ${assigned?L('Arrange again','Placér igen'):L('Arrange seats','Placér gæster')}</button>${CM&&assigned?`<button class="btn" onclick="savePeriod()" title="${L('Remember these partners so the next plan gives new ones','Husk disse makkere, så næste plan giver nye')}">${ic('history')} ${L('Save as current seating','Gem som nuværende pladser')}</button>${nextChange()?`<span class="muted">${ic('calendar')} ${L('Next change','Næste skift')}: ${nextChange()}</span>`:''}`:''}
+   ${assigned?`<button class="btn" onclick="if(confirm('${L('Clear all seats and locks?','Ryd alle pladser og låse?')}')){S.assign={};S.locked={};commit()}">${L('Clear','Ryd')}</button>`:''}
+   ${S.settings.floor&&!CM?`<button class="btn" aria-pressed="${moveMode}" onclick="moveMode=!moveMode;render()">${moveMode?ic('check')+' '+L('Done moving','Færdig'):ic('move')+' '+L('Move tables','Flyt borde')}</button><button class="btn" onclick="rotSheet()">${ic('rotate-cw')} ${L('Turn','Drej')}</button>`:''}
+   <span class="grow"></span><button class="btn" onclick="printSheet()">${ic('printer')} ${L('Print','Udskriv')}</button></div>
+  ${st}
+  ${assigned&&unseated.length||sel==='tray'?`<div class="tray" data-tray="1" aria-label="${L('Not seated','Ikke placeret')}"><span class="muted">${L('Not seated:','Ikke placeret:')}</span>${unseated.map(g=>`<div class="chip ${g.type==='kid'?'kid':''}" data-g="${g.id}" role="button" tabindex="0" style="cursor:grab">${esc(g.name)}</div>`).join('')}</div>`:''}
+  ${moveMode||(CM&&S.settings.floor)?`<p class="muted">${CM?L('Drag a desk to move it – drop it close to another and they join. Use the turn button to turn it 90°; joined desks turn together.','Træk et bord for at flytte det – slip det tæt på et andet, så sættes de sammen. Brug drej-knappen for at dreje det 90°; sammensatte borde drejer sammen.'):''}${CM?'':L('Drag a table to move it – drop it close to another and they snap together. Tap a table to turn it 90°; joined tables turn together.','Træk et bord for at flytte det – slip det tæt på et andet, så sættes de sammen. Tryk på et bord for at dreje det 90°; sammensatte borde drejer sammen.')}</p>`:''}
+  ${body}
+  <p class="muted" style="margin-top:12px">${L('Tip: drag a guest onto a seat (on touch: press and hold, then drag), or tap two seats to swap. The lock keeps a guest in place when you arrange again.','Tip: træk en gæst hen på en plads (på touch: hold fingeren nede og træk), eller tryk på to pladser for at bytte. Låsen holder gæsten på pladsen når du placerer igen.')}</p>`;
+}
+function doArrange(){const r=arrange();sel=null;if(r.error){alert(r.error);return;}commit();const ev=evaluate(S.assign,allSeats(),true);ev.issues=ev.issues.filter(x=>!/^Tip:/.test(x));toast(ev.issues.length?L(`${ev.issues.length} problem(s) left`,`${ev.issues.length} problem(er) tilbage`):L('All rules satisfied','Alle regler er opfyldt'));}
+function rotSheet(){const rs=S.tables.filter(t=>t.shape==='rect');
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${L('Turn tables 90°','Drej borde 90°')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb"><div class="chips">${rs.map(t=>`<button class="chip" onclick="rotGroup(${t.id})">${esc(t.name)}</button>`).join('')||L('No long tables.','Ingen langborde.')}</div></div>`;openDlg();}
+/* seat interactions */
+function lockSeat(k){if(S.locked[k]!=null)delete S.locked[k];else if(S.assign[k]!=null)S.locked[k]=S.assign[k];commit();}
+function swapSeats(a,b){const A=S.assign[a]??null,B=S.assign[b]??null;S.assign[a]=B;S.assign[b]=A;
+  const la=S.locked[a],lb=S.locked[b];delete S.locked[a];delete S.locked[b];if(la!=null&&B!=null)S.locked[a]=B;if(lb!=null&&A!=null)S.locked[b]=A;}
+function placeGuest(gid,k){gid=+gid;const from=Object.keys(S.assign).find(x=>S.assign[x]===gid);
+  if(from){if(from===k)return;swapSeats(from,k);}else{const prev=S.assign[k];if(prev!=null)delete S.locked[k];S.assign[k]=gid;}
+  S.locked[k]=gid;commit();toast(L(`${G(gid).name} placed and locked`,`${G(gid).name} placeret og låst`));}
+function unseat(gid){for(const k in S.assign)if(S.assign[k]==gid){S.assign[k]=null;delete S.locked[k];}commit();}
+function tapSeat(k){
+  if(sel&&sel.startsWith&&sel.startsWith('g:')){placeGuest(sel.slice(2),k);sel=null;render();return;}
+  if(sel==null){if(S.assign[k]==null){return;}sel=k;render();toast(L('Now tap another seat to swap','Tryk nu på en anden plads for at bytte'));return;}
+  if(sel===k){sel=null;render();return;}
+  swapSeats(sel,k);sel=null;commit();}
+$('#main').addEventListener('click',e=>{if(justDragged){justDragged=false;return;}
+  const lk=e.target.closest('[data-lock]');if(lk){e.stopPropagation();lockSeat(lk.dataset.lock);return;}
+  const s=e.target.closest('.seat[data-k]');if(s){tapSeat(s.dataset.k);return;}
+  const c=e.target.closest('.tray [data-g]');if(c){sel=sel==='g:'+c.dataset.g?null:'g:'+c.dataset.g;render();if(sel)toast(L('Tap a seat for this guest','Tryk på en plads til gæsten'));}});
+$('#main').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.seat,[data-g][role=button]')){e.preventDefault();e.target.click();}});
+/* pointer drag – works for mouse, pen and touch (touch: long-press) */
+let DR=null;
+document.addEventListener('pointerdown',e=>{
+  if(e.button>0||e.target.closest('[data-lock]'))return;
+  const b=e.target.closest('.board[data-t]');
+  const rb=e.target.closest('[data-rot]');if(rb){e.preventDefault();e.stopPropagation();justDragged=true;setTimeout(()=>justDragged=false,50);rotGroup(+rb.dataset.rot);return;}
+  if(b&&(moveMode||CM)){const t=S.tables.find(t=>t.id==b.dataset.t),sc=b.closest('.inner').getBoundingClientRect().width/b.closest('.inner').offsetWidth;
+    DR={kind:'table',t,sx:e.clientX,sy:e.clientY,x0:t.x||0,y0:t.y||0,sc,el:b,on:true};b.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  const src=e.target.closest('[data-g]');if(!src||!$('#main').contains(src))return;
+  DR={kind:'guest',gid:src.dataset.g,sx:e.clientX,sy:e.clientY,on:false,touch:e.pointerType!=='mouse'};
+  if(DR.touch)DR.timer=setTimeout(()=>{if(DR&&!DR.on)startDrag(e.clientX,e.clientY);},280);
+});
+function startDrag(x,y){DR.on=true;document.body.classList.add('dragging');navigator.vibrate&&navigator.vibrate(15);
+  const gh=document.createElement('div');gh.className='dragghost';gh.textContent=G(DR.gid).name;document.body.appendChild(gh);DR.gh=gh;moveGhost(x,y);}
+function moveGhost(x,y){DR.gh.style.left=x+'px';DR.gh.style.top=y+'px';document.querySelectorAll('.over').forEach(o=>o.classList.remove('over'));
+  const t=document.elementFromPoint(x,y),tg=t&&(t.closest('.seat[data-k]')||t.closest('[data-tray]'));if(tg)tg.classList.add('over');}
+document.addEventListener('pointermove',e=>{if(!DR)return;const dx=e.clientX-DR.sx,dy=e.clientY-DR.sy;
+  if(DR.kind==='table'){DR.t.x=Math.round(DR.x0+dx/DR.sc);DR.t.y=Math.round(DR.y0+dy/DR.sc);DR.el.style.transform=`translate(${dx/DR.sc}px,${dy/DR.sc}px)`;return;}
+  if(!DR.on){if(Math.hypot(dx,dy)>8){if(DR.touch){clearTimeout(DR.timer);DR=null;}else startDrag(e.clientX,e.clientY);}return;}
+  moveGhost(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(DR&&DR.on)e.preventDefault();},{passive:false});
+document.addEventListener('contextmenu',e=>{if(DR&&DR.touch)e.preventDefault();});
+function endDrag(e,cancel){if(!DR)return;clearTimeout(DR.timer);const d=DR;DR=null;
+  if(d.kind==='table'){if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<6){d.t.x=d.x0;d.t.y=d.y0;justDragged=true;setTimeout(()=>justDragged=false,50);if(!cancel&&moveMode)rotGroup(d.t.id);return;}snapTable(d.t);commit();return;}
+  if(!d.on)return;document.body.classList.remove('dragging');d.gh.remove();justDragged=true;setTimeout(()=>justDragged=false,50);
+  document.querySelectorAll('.over').forEach(o=>o.classList.remove('over'));if(cancel)return;
+  const t=document.elementFromPoint(e.clientX,e.clientY);if(!t)return;
+  const s=t.closest('.seat[data-k]');if(s){placeGuest(d.gid,s.dataset.k);return;}
+  if(t.closest('[data-tray]')){unseat(d.gid);}}
+document.addEventListener('pointerup',e=>endDrag(e));
+document.addEventListener('pointercancel',e=>endDrag(e,true));
+
+/* ---------- dialog / menu ---------- */
+function openDlg(){const d=$('#dlg');if(!d.open)d.showModal();}
+function closeDlg(){$('#dlg').close();}
+$('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))closeDlg();});
+function setLang(l){localStorage.setItem('bp_lang',l);location.href=location.pathname+(l==='da'?(CM?'?klasse':'?fest'):(CM?'?class':'?event'));}
+function drawFoot(){const f=$('#foot');if(f)f.innerHTML=`${L('Free to use','Gratis at bruge')} · <button onclick="openPrivacy()">${L('No cookies, no tracking','Ingen cookies, ingen sporing')}</button> · ${L('Made by','Lavet af')} <a href="https://github.com/ksk-itdk/seating-planner" target="_blank" rel="noopener">KSKIT</a> · <a href="LICENSE" target="_blank">${L('MIT license','MIT-licens')}</a>`;}
+function openPrivacy(){
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${L('Privacy & cookies','Privatliv og cookies')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb">
+  <p><b>${L('Free to use.','Gratis at bruge.')}</b> ${L('No account, no ads, no payment.','Ingen konto, ingen reklamer, ingen betaling.')}</p>
+  <p><b>${L('No cookies and no tracking.','Ingen cookies og ingen sporing.')}</b> ${L('The site uses no cookies, no analytics, no ads and loads nothing from other websites. We do not log what you do in the app.','Siden bruger ingen cookies, ingen statistik, ingen reklamer og henter intet fra andre hjemmesider. Vi logger ikke, hvad du gør i appen.')}</p>
+  <p><b>${L('Your plan stays on your device.','Din plan bliver på din enhed.')}</b> ${L('Names and seats are saved only in this browser’s local storage, so the plan is there next time. It is never sent to us. You can delete it any time with Menu → Start over.','Navne og pladser gemmes kun i browserens lokale lager, så planen er der næste gang. Den sendes aldrig til os. Du kan slette den når som helst under Menu → Start forfra.')}</p>
+  <p><b>${L('Share links','Delingslinks')}</b> ${L('carry the plan after the # in the link. That part is never sent to the server – only the people you send the link to can see it.','indeholder planen efter # i linket. Den del sendes aldrig til serveren – kun dem, du sender linket til, kan se den.')}</p>
+  <p class="muted">${L('Because nothing is stored beyond what you ask the app to keep, EU rules (ePrivacy/GDPR) do not require a cookie banner.','Da intet gemmes ud over det, du selv beder appen om at huske, kræver EU-reglerne (ePrivacy/GDPR) ikke et cookie-banner.')}</p>
+  <p>${L('Made by','Lavet af')} <a href="https://github.com/ksk-itdk" target="_blank" rel="noopener">KSKIT</a>. ${L('Free to reuse and change under the','Må frit genbruges og ændres under')} <a href="LICENSE" target="_blank">${L('MIT license','MIT-licensen')}</a> ${L('– just keep the credit to KSKIT.','– bevar blot krediteringen af KSKIT.')}</p>
+  </div><div class="sf"><button class="btn primary" onclick="closeDlg()">${L('OK','OK')}</button></div>`;openDlg();}
+function openMenu(){
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${L('Menu','Menu')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb"><div class="menu">
+   <div class="kv" style="padding:4px 8px"><span>${ic('globe')} ${L('Language','Sprog')}</span>${seg([['da','Dansk'],['en','English']],LANG,'setLang')}</div><div class="kv" style="padding:4px 8px"><span>${ic('layout-grid')} ${L('Plan type','Plantype')}</span>${seg([['event',LANG==='da'?'Begivenhed':'Event'],['class',L('School class','Skoleklasse')]],MODE,'setMode')}</div><div class="kv" style="padding:4px 8px"><span>${ic(THEME==='light'?'sun':'moon')} ${L('Theme','Tema')}</span>${seg([['dark',L('Dark','Mørk')],['light',L('Light','Lys')]],THEME,'setTheme')}</div><hr>
+   ${CM?'':`<button onclick="closeDlg();gdRestart()">${ic('list-checks')} ${L('Guided setup','Guidet opsætning')}</button>`}
+   <button onclick="closeDlg();shareLink()">${ic('link')} ${L('Copy share link','Kopiér delingslink')}</button>
+   <button onclick="closeDlg();printSheet()">${ic('printer')} ${L('Print…','Udskriv…')}</button>
+   <button onclick="closeDlg();exportJSON()">${ic('download')} ${L('Save plan to file','Gem plan som fil')}</button>
+   <button onclick="closeDlg();$('#imp').click()">${ic('upload')} ${L('Open plan from file','Åbn plan fra fil')}</button>
+   <button onclick="closeDlg();exportCSV()">${ic('file-text')} ${L('Export seating list (CSV)','Eksportér pladsliste (CSV)')}</button><hr>
+   <button onclick="newEvent()">${ic('file-plus')} ${L('New event (keep guests)','Ny begivenhed (behold gæster)')}</button>
+   <button onclick="startOver()" class="bad">${ic('trash-2')} ${L('Start over','Start forfra')}</button><hr>
+   <button onclick="openPrivacy()">${ic('lock')} ${L('Privacy & cookies','Privatliv og cookies')}</button>
+   <a href="agents.md">${ic('bot')} ${L('For AI agents','Til AI-agenter')}</a>
+   <p class="muted" style="padding:0 8px">${L('Your plan is stored only in this browser. Use a share link or file to move it to another device.','Din plan gemmes kun i denne browser. Brug et delingslink eller en fil for at flytte den til en anden enhed.')}</p>
+  </div></div>`;openDlg();}
+
+/* ---------- print ---------- */
+function printSheet(){
+  $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${L('Print','Udskriv')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb">
+   ${[['pPlan',L('Table plan','Bordplan'),1],['pList',L('Alphabetical guest list (find your seat)','Alfabetisk gæsteliste (find din plads)'),1],['pCards',L('Place cards (fold in the middle)','Bordkort (fold på midten)'),0]].map(([id,t,on])=>`<div class="kv"><label for="${id}" class="grow">${t}</label><span class="switch"><input type="checkbox" role="switch" id="${id}" ${on?'checked':''}><span></span></span></div>`).join('')}
+  </div><div class="sf"><button class="btn" onclick="closeDlg()">${L('Cancel','Annullér')}</button><button class="btn primary" onclick="doPrint()">${ic('printer')} ${L('Print','Udskriv')}</button></div>`;openDlg();}
+function seatTable(){const out=[];S.tables.forEach(t=>seatsOf(t).order.forEach((s,i)=>{const g=G(S.assign?.[s.key]);if(g)out.push({g,t,n:i+1});}));return out;}
+function doPrint(){const p=$('#pPlan').checked,l=$('#pList').checked,c=$('#pCards').checked;closeDlg();
+  const ev={bad:new Set()},st=seatTable();let h=`<h1>${esc(S.event||L('Seating plan','Bordplan'))}</h1>`;
+  if(p){if(S.settings.floor){const F=floorInfo(),d=drawing(F.gs,ev,F.blocked);h+=`<div class="pt fit" data-w="${d.W}" data-h="${d.H}" style="width:100%">${d.html}</div>`;}
+    else h+=S.tables.map(t=>{const d=drawing([tableGeom({...t,x:0,y:0,rot:0})],ev);return `<div class="pt"><h2>${esc(t.name)}</h2><div class="fit" data-w="${d.W}" data-h="${d.H}">${d.html}</div></div>`;}).join('');}
+  if(l)h+=`<h2 style="break-before:${p?'page':'auto'}">${L('Find your seat','Find din plads')}</h2><div class="glist">${st.sort((a,b)=>a.g.name.localeCompare(b.g.name,LANG)).map(x=>`<div>${esc(x.g.name)} — <b>${esc(x.t.name)}</b>, ${L('seat','plads')} ${x.n}</div>`).join('')}</div>`;
+  if(c)h+=`<div class="cards" style="break-before:${p||l?'page':'auto'}">${st.map(x=>`<div class="pc"><div>${esc(x.g.name)}<small>${esc(x.t.name)}</small></div><div>${esc(x.g.name)}<small>${esc(x.t.name)}</small></div></div>`).join('')}</div>`;
+  const pa=$('#printArea');pa.innerHTML=h;pa.style.display='block';pa.style.width='180mm';
+  pa.querySelectorAll('.fit').forEach(f=>{const W=+f.dataset.w,H=+f.dataset.h,s=Math.min(1,f.clientWidth/W);f.style.height=H*s+'px';f.firstElementChild.style.transform=`scale(${s})`;});
+  pa.style.display='';setTimeout(()=>print(),50);}
+
+/* ---------- files / share ---------- */
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();}
+function askOk(title,msg,ok,fn,bad){window.__ok=fn;$('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${title}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb"><p style="margin:0">${msg}</p></div><div class="sf"><button class="btn" onclick="closeDlg()">${L('Cancel','Annuller')}</button><button class="btn ${bad?'danger':'primary'}" onclick="closeDlg();__ok()">${ok}</button></div>`;openDlg();}
+function newEvent(){askOk(L('New event','Ny begivenhed'),L('Tables, guests and rules are kept, seating is cleared.','Borde, gæster og regler bevares, pladserne ryddes.'),L('Start new event','Start ny begivenhed'),()=>{S.assign={};S.locked={};S.event='';commit();});}
+function startOver(){askOk(L('Start over','Start forfra'),CM?L('This deletes every student, group, rule and the seating in this class plan.','Dette sletter alle elever, grupper, regler og pladser i denne klasseplan.'):L('This deletes every guest, table, rule and the seating in this event plan. The guided setup starts again.','Dette sletter alle gæster, borde, regler og pladser i denne plan. Den guidede opsætning starter forfra.'),L('Delete everything','Slet alt'),()=>{S=CM?blankClass():blank();if(!CM)S.guide={step:'names',i:0};save();go(CM?'tables':'guide');toast(L('Everything was deleted','Alt er slettet'));},1);}
+async function z(str,inv){const cs=inv?new DecompressionStream('deflate-raw'):new CompressionStream('deflate-raw');return new Response(new Blob([str]).stream().pipeThrough(cs)).arrayBuffer();}
+async function shareLink(){const d={...S};d.assign=Object.fromEntries(Object.entries(d.assign||{}).filter(([k,v])=>v!=null));
+  const b=new Uint8Array(await z(JSON.stringify(d)));let bin='';b.forEach(c=>bin+=String.fromCharCode(c));
+  const url=location.origin+location.pathname+'#d='+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:S.event||L('Seating plan','Bordplan'),url});return;}catch(e){}}
+  try{await navigator.clipboard.writeText(url);toast(L('Share link copied','Delingslink kopieret'));}catch(e){prompt(L('Copy this link:','Kopiér dette link:'),url);}}
+async function loadShare(){const m=location.hash.match(/^#d=([\w-]+)/);if(!m)return;history.replaceState(null,'',location.pathname+location.search);
+  try{const s=atob(m[1].replace(/-/g,'+').replace(/_/g,'/')),b=Uint8Array.from(s,c=>c.charCodeAt(0));const d=JSON.parse(new TextDecoder().decode(await z(b,1)));
+    if(!d.tables||!d.guests)throw 0;if(!confirm(L('Open the shared plan','Åbn den delte plan')+' "'+(d.event||'')+'"? '+L('This replaces the plan on this device.','Det erstatter planen på denne enhed.')))return;
+    S=Object.assign(blank(),d);migrate();view='plan';commit();}catch(e){alert(L('The share link is invalid or damaged','Delingslinket er ugyldigt eller beskadiget'));}}
+function exportJSON(){const n=(S.event||'bordplan').replace(/[^\w\-æøåÆØÅ ]+/g,'').trim().replace(/ +/g,'-')||'bordplan';dl(n+'-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(S,null,1),'application/json');}
+function importJSON(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{let d;try{d=JSON.parse(t);}catch(e){return alert(L('Not a valid plan file','Ikke en gyldig planfil'));}
+  if(!d.tables||!d.guests)return alert(L('Not a seating plan file','Ikke en bordplan-fil'));
+  const keep=confirm(L(`Open “${d.event||f.name}”.\n\nOK = everything incl. seating\nCancel = tables, guests and rules only`,`Åbn “${d.event||f.name}”.\n\nOK = alt inkl. pladser\nAnnullér = kun borde, gæster og regler`));
+  S=Object.assign(blank(),d);if(!keep){S.assign={};S.locked={};}migrate();inp.value='';commit();});}
+function exportCSV(){const rows=[[L('Name','Navn'),L('Table','Bord'),L('Seat','Plads')]];seatTable().forEach(x=>rows.push([x.g.name,x.t.name,x.n]));
+  dl('bordplan.csv','\ufeff'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv');}
+
+/* ---------- main render ---------- */
+function render(){const seats=allSeats();for(const k in S.assign)if(!seats[k])delete S.assign[k];
+  renderNav();$('#main').innerHTML={tables:vTables,guests:vGuests,rules:vRules,plan:vPlan,guide:CM?vCGuide:vGuide}[view]();fitAll();}
+/* machine API for agents/automation – see agents.md */
+window.bordplan={version:2,get:()=>JSON.parse(JSON.stringify(S)),set:d=>{S=Object.assign(blank(),d);migrate();commit();return true;},
+  arrange:()=>{const r=arrange();commit();return r.error?r:{ok:true,...window.bordplan.check()};},
+  check:()=>{const e=evaluate(S.assign||{},allSeats(),true);return{issues:e.issues,seats:Object.keys(allSeats()).length,guests:S.guests.length};},
+  seating:()=>seatTable().map(x=>({guest:x.g.name,table:x.t.name,seat:x.n})),go};
+addEventListener('hashchange',()=>{if(/^#d=/.test(location.hash))loadShare();});
+document.querySelector('label[for=evName]').textContent=L('Event name','Navn på begivenhed');
+(()=>{const e=$('#evName'),f=()=>e.size=Math.max(8,(e.value||e.placeholder).length+1);e.addEventListener('input',f);f();setInterval(f,1000)})();document.querySelector('a.sr').textContent=L('Skip to content','Gå til indhold');migrate();save();render();loadShare();drawFoot();
+</script>
+</body>
+</html>
