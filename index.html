@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Bordplan © 2026 KSKIT (https://github.com/ksk-itdk). MIT License – free to use, copy and change; keep this notice and credit KSKIT. Icons: Lucide, ISC license. -->
+<!-- Bordplan v1.0.0 · © 2026 KSKIT (https://github.com/ksk-itdk). MIT License – free to use, copy and change; keep this notice and credit KSKIT. Icons: Lucide, ISC license. -->
 <html lang="da">
 <head>
 <meta charset="utf-8">
@@ -877,7 +877,8 @@ function openDlg(){const d=$('#dlg');if(!d.open)d.showModal();}
 function closeDlg(){$('#dlg').close();}
 $('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))closeDlg();});
 function setLang(l){localStorage.setItem('bp_lang',l);location.href=location.pathname+(l==='da'?(CM?'?klasse':'?fest'):(CM?'?class':'?event'));}
-function drawFoot(){const f=$('#foot');if(f)f.innerHTML=`${L('Free to use','Gratis at bruge')} · <button onclick="openPrivacy()">${L('No cookies, no tracking','Ingen cookies, ingen sporing')}</button> · ${L('Made by','Lavet af')} <a href="https://github.com/ksk-itdk/seating-planner" target="_blank" rel="noopener">KSKIT</a> · <a href="LICENSE" target="_blank">${L('MIT license','MIT-licens')}</a>`;}
+const APP_VERSION='1.0.0';
+function drawFoot(){const f=$('#foot');if(f)f.innerHTML=`${L('Free to use','Gratis at bruge')} · <button onclick="openPrivacy()">${L('No cookies, no tracking','Ingen cookies, ingen sporing')}</button> · ${L('Made by','Lavet af')} <a href="https://github.com/ksk-itdk/seating-planner" target="_blank" rel="noopener">KSKIT</a> · <a href="LICENSE" target="_blank">${L('MIT license','MIT-licens')}</a> · <a href="https://github.com/ksk-itdk/seating-planner/releases" target="_blank" rel="noopener">v${APP_VERSION}</a>`;}
 function openPrivacy(){
   $('#dlg').innerHTML=`<div class="sh"><h3 id="dlgT">${L('Privacy & cookies','Privatliv og cookies')}</h3><button class="icon" aria-label="${L('Close','Luk')}" onclick="closeDlg()">${ic('x')}</button></div><div class="sb">
   <p><b>${L('Free to use.','Gratis at bruge.')}</b> ${L('No account, no ads, no payment.','Ingen konto, ingen reklamer, ingen betaling.')}</p>

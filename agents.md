@@ -71,3 +71,6 @@ Icons: Lucide (ISC license), inlined as `IC` map + `ic(name)` in the engine part
 
 ## License
 MIT, © 2026 KSKIT. LICENSE file + notice at top of index.html + footer link. Keep it when editing.
+
+## Version
+Public version in `APP_VERSION` (5_plan) + header comment + README + CHANGELOG.md. Bump it (semver) and add a CHANGELOG entry when publishing to GitHub, then create a matching GitHub release tag vX.Y.Z.

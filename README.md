@@ -1,5 +1,7 @@
 # Bordplan – seating planner
 
+**Version 1.0.0** · [Changelog](CHANGELOG.md)
+
 A free seating planner for classrooms and events. It runs fully in the browser: no sign-up, no cookies, no tracking. Available in Danish and English.
 
 **Try it:** https://bordplan.kskspace.dk
